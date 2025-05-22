@@ -1,0 +1,9 @@
+del *.err
+del *.cod
+del *.grp
+del *.lsr
+del *.lst
+del *.map
+del *.obj
+del *.s19
+del *.sym
