@@ -308,7 +308,7 @@ PathName=stm8s_stdperiph_lib\libraries\stm8s_stdperiph_driver\src\stm8s_gpio.c
 [Root.Include Files]
 ElemType=Folder
 PathName=Include Files
-Child=Root.Include Files.include\stm8s903k3.h
+Child=Root.Include Files...\stm8s003_ajustado_p11r2a_rev00\stm8s_conf.h
 Config.0=Root.Include Files.Config.0
 Config.1=Root.Include Files.Config.1
 
@@ -377,6 +377,11 @@ String.3.0=
 String.4.0=
 String.5.0=
 String.6.0=2025,5,17,17,14,41
+
+[Root.Include Files...\stm8s003_ajustado_p11r2a_rev00\stm8s_conf.h]
+ElemType=File
+PathName=..\stm8s003_ajustado_p11r2a_rev00\stm8s_conf.h
+Next=Root.Include Files.include\stm8s903k3.h
 
 [Root.Include Files.include\stm8s903k3.h]
 ElemType=File

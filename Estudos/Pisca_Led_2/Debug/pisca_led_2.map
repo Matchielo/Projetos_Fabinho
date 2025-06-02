@@ -1,5 +1,5 @@
 
-Map of Debug\pisca_led_2.sm8 from link file Debug\pisca_led_2.lkf - Mon May 19 08:54:38 2025
+Map of Debug\pisca_led_2.sm8 from link file Debug\pisca_led_2.lkf - Mon Jun  2 14:00:27 2025
 
 
                                --------
@@ -7,18 +7,19 @@ Map of Debug\pisca_led_2.sm8 from link file Debug\pisca_led_2.lkf - Mon May 19 0
                                --------
 
 start 00008080 end 0000808c length    12 segment .const
-start 0000808f end 0000875e length  1743 segment .text
+start 00008095 end 00008723 length  1678 segment .text
 start 00004000 end 00004000 length     0 segment .eeprom
-start 00000000 end 00000000 length     0 segment .bsct
-start 00000000 end 0000000a length    10 segment .ubsct
-start 0000000a end 0000000a length     0 segment .bit
-start 0000000a end 0000000a length     0 segment .share
+start 00000000 end 00000001 length     1 segment .bsct, initialized
+start 00008094 end 00008095 length     1 segment .bsct, from
+start 00000001 end 0000000b length    10 segment .ubsct
+start 0000000b end 0000000b length     0 segment .bit
+start 0000000b end 0000000b length     0 segment .share
 start 00000100 end 00000100 length     0 segment .data
 start 00000100 end 00000100 length     0 segment .bss
-start 00000000 end 00000487 length  1159 segment .info.
-start 00000000 end 00003f1d length 16157 segment .debug
+start 00000000 end 000003cc length   972 segment .info.
+start 00000000 end 00003f7c length 16252 segment .debug
 start 00008000 end 00008080 length   128 segment .const
-start 0000808c end 0000808f length     3 segment .init
+start 0000808c end 00008094 length     8 segment .init
 
 
                                -------
@@ -26,83 +27,68 @@ start 0000808c end 0000808f length     3 segment .init
                                -------
 
 C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8:
-start 0000808f end 000080df length    80 section .text
+start 00008095 end 000080e5 length    80 section .text
 start 00000100 end 00000100 length     0 section .bss
-start 00000000 end 00000000 length     0 section .ubsct
+start 00000001 end 00000001 length     0 section .ubsct
 start 00000000 end 00000033 length    51 section .info.
 
 Debug\main.o:
-start 000080df end 00008197 length   184 section .text
-start 00000000 end 00001d39 length  7481 section .debug
+start 000080e5 end 000081a1 length   188 section .text
+start 00000000 end 00000001 length     1 section .bsct
+start 00000000 end 00001d98 length  7576 section .debug
 start 00000033 end 0000009c length   105 section .info.
 
 Debug\stm8s_clk.o:
-start 00008197 end 0000851b length   900 section .text
-start 00001d39 end 000033a8 length  5743 section .debug
+start 000081a1 end 00008525 length   900 section .text
+start 00001d98 end 00003407 length  5743 section .debug
 start 0000009c end 0000010a length   110 section .info.
 start 00008080 end 0000808c length    12 section .const
 
 Debug\stm8s_gpio.o:
-start 0000851b end 000085cd length   178 section .text
-start 000033a8 end 00003db2 length  2570 section .debug
+start 00008525 end 000085d7 length   178 section .text
+start 00003407 end 00003e11 length  2570 section .debug
 start 0000010a end 00000179 length   111 section .info.
 
-(C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)bmulx.o:
-start 000085cd end 000085db length    14 section .text
-start 00000179 end 000001a8 length    47 section .info.
-
-(C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lcmp.o:
-start 000085db end 000085fb length    32 section .text
-start 000001a8 end 000001d6 length    46 section .info.
-
-(C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lgadc.o:
-start 000085fb end 0000860b length    16 section .text
-start 000001d6 end 00000205 length    47 section .info.
-
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lreg.o:
-start 00000000 end 00000004 length     4 section .ubsct
-start 00000205 end 00000233 length    46 section .info.
+start 00000001 end 00000005 length     4 section .ubsct
+start 00000179 end 000001a7 length    46 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ltor.o:
-start 0000860b end 0000861d length    18 section .text
-start 00000233 end 00000261 length    46 section .info.
+start 000085d7 end 000085e9 length    18 section .text
+start 000001a7 end 000001d5 length    46 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ludiv.o:
-start 0000861d end 00008631 length    20 section .text
-start 00000261 end 00000290 length    47 section .info.
+start 000085e9 end 000085fd length    20 section .text
+start 000001d5 end 00000204 length    47 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o:
-start 00008631 end 0000871c length   235 section .text
-start 00000290 end 000002be length    46 section .info.
+start 000085fd end 000086e8 length   235 section .text
+start 00000204 end 00000232 length    46 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lgneg.o:
-start 0000871c end 0000872f length    19 section .text
-start 000002be end 000002ed length    47 section .info.
+start 000086e8 end 000086fb length    19 section .text
+start 00000232 end 00000261 length    47 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lneg.o:
-start 0000872f end 00008744 length    21 section .text
-start 000002ed end 0000031b length    46 section .info.
+start 000086fb end 00008710 length    21 section .text
+start 00000261 end 0000028f length    46 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)rtol.o:
-start 00008744 end 00008756 length    18 section .text
-start 0000031b end 00000349 length    46 section .info.
-
-(C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)utolx.o:
-start 00008756 end 0000875d length     7 section .text
-start 00000349 end 00000378 length    47 section .info.
+start 00008710 end 00008722 length    18 section .text
+start 0000028f end 000002bd length    46 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)xreg.o:
-start 00000004 end 00000007 length     3 section .ubsct
-start 00000378 end 000003a6 length    46 section .info.
+start 00000005 end 00000008 length     3 section .ubsct
+start 000002bd end 000002eb length    46 section .info.
 
 (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)yreg.o:
-start 00000007 end 0000000a length     3 section .ubsct
-start 000003a6 end 000003d4 length    46 section .info.
+start 00000008 end 0000000b length     3 section .ubsct
+start 000002eb end 00000319 length    46 section .info.
 
 Debug\stm8_interrupt_vector.o:
-start 0000875d end 0000875e length     1 section .text
-start 00003db2 end 00003f1d length   363 section .debug
-start 000003d4 end 0000044e length   122 section .info.
+start 00008722 end 00008723 length     1 section .text
+start 00003e11 end 00003f7c length   363 section .debug
+start 00000319 end 00000393 length   122 section .info.
 start 00008000 end 00008080 length   128 section .const
 
 
@@ -111,9 +97,10 @@ start 00008000 end 00008080 length   128 section .const
                              -----------
 
 Debug\main.o:
-_Delay_ms                           12   (8)
+_Delay_ms                            6   (6)
 _InitCLOCK                          12   (2)
 _InitGPIO                            8   (2)
+_Pisca_LED                           8   (2)
 _main                           >   14   (2)
 
 Debug\stm8_interrupt_vector.o:
@@ -205,58 +192,62 @@ Stack size: 31
   21 > __stext: (0)
 
   22 > _main: (2)
-  23      + _Delay_ms: (8)
-  24      + _GPIO_WriteHigh: (5)
-  25      + _GPIO_WriteLow: (5)
-  26      + _InitCLOCK: (2)
-  27      |    + _CLK_ClockSwitchCmd: (2)
-  28      |    + _CLK_ClockSwitchConfig: (10)
-  29      |    + _CLK_DeInit: (2)
-  30      |    + _CLK_GetFlagStatus: (7)
-  31      |    + _CLK_HSECmd: (2)
-  32      |    + _CLK_HSICmd: (2)
-  33      |    + _CLK_HSIPrescalerConfig: (3)
-  34      |    + _CLK_LSICmd: (2)
-  35      |    + _CLK_PeripheralClockConfig: (4)
-  36      |    + _CLK_SYSCLKConfig: (3)
+  23      + _InitCLOCK: (2)
+  24      |    + _CLK_ClockSwitchCmd: (2)
+  25      |    + _CLK_ClockSwitchConfig: (10)
+  26      |    + _CLK_DeInit: (2)
+  27      |    + _CLK_GetFlagStatus: (7)
+  28      |    + _CLK_HSECmd: (2)
+  29      |    + _CLK_HSICmd: (2)
+  30      |    + _CLK_HSIPrescalerConfig: (3)
+  31      |    + _CLK_LSICmd: (2)
+  32      |    + _CLK_PeripheralClockConfig: (4)
+  33      |    + _CLK_SYSCLKConfig: (3)
           | 
-  37      + _InitGPIO: (2)
-  38      |    + _GPIO_Init: (6)
+  34      + _InitGPIO: (2)
+  35      |    + _GPIO_Init: (6)
+          | 
+  36      + _Pisca_LED: (2)
+  37      |    + _Delay_ms: (6)
+  38      |    + _GPIO_WriteHigh: (5)
+  39      |    + _GPIO_WriteLow: (5)
           | 
        
-  39 > f_NonHandledInterrupt: (6)
+  40 > f_NonHandledInterrupt: (6)
 
-  40   _CLK_ClockSwitchCmd --> 27
+  41   _CLK_ClockSwitchCmd --> 24
 
-  41   _CLK_ClockSwitchConfig --> 28
+  42   _CLK_ClockSwitchConfig --> 25
 
-  42   _CLK_DeInit --> 29
+  43   _CLK_DeInit --> 26
 
-  43   _CLK_GetFlagStatus --> 30
+  44   _CLK_GetFlagStatus --> 27
 
-  44   _CLK_HSECmd --> 31
+  45   _CLK_HSECmd --> 28
 
-  45   _CLK_HSICmd --> 32
+  46   _CLK_HSICmd --> 29
 
-  46   _CLK_HSIPrescalerConfig --> 33
+  47   _CLK_HSIPrescalerConfig --> 30
 
-  47   _CLK_LSICmd --> 34
+  48   _CLK_LSICmd --> 31
 
-  48   _CLK_PeripheralClockConfig --> 35
+  49   _CLK_PeripheralClockConfig --> 32
 
-  49   _CLK_SYSCLKConfig --> 36
+  50   _CLK_SYSCLKConfig --> 33
 
-  50   _Delay_ms --> 23
+  51   _Delay_ms --> 37
 
-  51   _GPIO_Init --> 38
+  52   _GPIO_Init --> 35
 
-  52   _GPIO_WriteHigh --> 24
+  53   _GPIO_WriteHigh --> 38
 
-  53   _GPIO_WriteLow --> 25
+  54   _GPIO_WriteLow --> 39
 
-  54   _InitCLOCK --> 26
+  55   _InitCLOCK --> 23
 
-  55   _InitGPIO --> 37
+  56   _InitGPIO --> 34
+
+  57   _Pisca_LED --> 36
 
 
 
@@ -322,53 +313,53 @@ _AWU_TBR                         000050f2   defined in Debug\main.o
 _BEEP_CSR                        000050f3   defined in Debug\main.o
 _CFG_GCR                         00007f60   defined in Debug\main.o
 _CLKPrescTable                   00008084   defined in Debug\stm8s_clk.o section .const
-_CLK_AdjustHSICalibrationValue   00008471   defined in Debug\stm8s_clk.o section .text
+_CLK_AdjustHSICalibrationValue   0000847b   defined in Debug\stm8s_clk.o section .text
 _CLK_CANCCR                      000050cb   defined in Debug\main.o
-_CLK_CCOCmd                      00008207   defined in Debug\stm8s_clk.o section .text
-_CLK_CCOConfig                   0000836a   defined in Debug\stm8s_clk.o section .text
+_CLK_CCOCmd                      00008211   defined in Debug\stm8s_clk.o section .text
+_CLK_CCOConfig                   00008374   defined in Debug\stm8s_clk.o section .text
 _CLK_CCOR                        000050c9   defined in Debug\main.o
 _CLK_CKDIVR                      000050c6   defined in Debug\main.o
 _CLK_CMSR                        000050c3   defined in Debug\main.o
 _CLK_CSSR                        000050c8   defined in Debug\main.o
-_CLK_ClearITPendingBit           0000850c   defined in Debug\stm8s_clk.o section .text
-_CLK_ClockSecuritySystemEnable   000083f4   defined in Debug\stm8s_clk.o section .text
-_CLK_ClockSwitchCmd              00008215   defined in Debug\stm8s_clk.o section .text
+_CLK_ClearITPendingBit           00008516   defined in Debug\stm8s_clk.o section .text
+_CLK_ClockSecuritySystemEnable   000083fe   defined in Debug\stm8s_clk.o section .text
+_CLK_ClockSwitchCmd              0000821f   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
-_CLK_ClockSwitchConfig           0000829d   defined in Debug\stm8s_clk.o section .text
+_CLK_ClockSwitchConfig           000082a7   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
-_CLK_DeInit                      00008197   defined in Debug\stm8s_clk.o section .text
+_CLK_DeInit                      000081a1   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
 _CLK_ECKR                        000050c1   defined in Debug\main.o
-_CLK_FastHaltWakeUpCmd           000081cf   defined in Debug\stm8s_clk.o section .text
-_CLK_GetClockFreq                000083fd   defined in Debug\stm8s_clk.o section .text
-_CLK_GetFlagStatus               00008483   defined in Debug\stm8s_clk.o section .text
+_CLK_FastHaltWakeUpCmd           000081d9   defined in Debug\stm8s_clk.o section .text
+_CLK_GetClockFreq                00008407   defined in Debug\stm8s_clk.o section .text
+_CLK_GetFlagStatus               0000848d   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
-_CLK_GetITStatus                 000084e0   defined in Debug\stm8s_clk.o section .text
-_CLK_GetSYSCLKSource             000083f9   defined in Debug\stm8s_clk.o section .text
-_CLK_HSECmd                      000081dd   defined in Debug\stm8s_clk.o section .text
+_CLK_GetITStatus                 000084ea   defined in Debug\stm8s_clk.o section .text
+_CLK_GetSYSCLKSource             00008403   defined in Debug\stm8s_clk.o section .text
+_CLK_HSECmd                      000081e7   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
-_CLK_HSICmd                      000081eb   defined in Debug\stm8s_clk.o section .text
+_CLK_HSICmd                      000081f5   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
-_CLK_HSIPrescalerConfig          00008357   defined in Debug\stm8s_clk.o section .text
+_CLK_HSIPrescalerConfig          00008361   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
 _CLK_HSITRIMR                    000050cc   defined in Debug\main.o
 _CLK_ICKR                        000050c0   defined in Debug\main.o
-_CLK_ITConfig                    00008381   defined in Debug\stm8s_clk.o section .text
-_CLK_LSICmd                      000081f9   defined in Debug\stm8s_clk.o section .text
+_CLK_ITConfig                    0000838b   defined in Debug\stm8s_clk.o section .text
+_CLK_LSICmd                      00008203   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
 _CLK_PCKENR1                     000050c7   defined in Debug\main.o
 _CLK_PCKENR2                     000050ca   defined in Debug\main.o
-_CLK_PeripheralClockConfig       00008231   defined in Debug\stm8s_clk.o section .text
+_CLK_PeripheralClockConfig       0000823b   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
 _CLK_SWCR                        000050c5   defined in Debug\main.o
 _CLK_SWIMCCR                     000050cd   defined in Debug\main.o
-_CLK_SWIMConfig                  000083e6   defined in Debug\stm8s_clk.o section .text
+_CLK_SWIMConfig                  000083f0   defined in Debug\stm8s_clk.o section .text
 _CLK_SWR                         000050c4   defined in Debug\main.o
-_CLK_SYSCLKConfig                000083b9   defined in Debug\stm8s_clk.o section .text
+_CLK_SYSCLKConfig                000083c3   defined in Debug\stm8s_clk.o section .text
                                             used in Debug\main.o
-_CLK_SYSCLKEmergencyClear        0000847e   defined in Debug\stm8s_clk.o section .text
-_CLK_SlowActiveHaltWakeUpCmd     00008223   defined in Debug\stm8s_clk.o section .text
-_Delay_ms                        00008169   defined in Debug\main.o section .text
+_CLK_SYSCLKEmergencyClear        00008488   defined in Debug\stm8s_clk.o section .text
+_CLK_SlowActiveHaltWakeUpCmd     0000822d   defined in Debug\stm8s_clk.o section .text
+_Delay_ms                        000080ed   defined in Debug\main.o section .text
 _EXTI_CR1                        000050a0   defined in Debug\main.o
 _EXTI_CR2                        000050a1   defined in Debug\main.o
 _FLASH_CR1                       0000505a   defined in Debug\main.o
@@ -379,19 +370,19 @@ _FLASH_IAPSR                     0000505f   defined in Debug\main.o
 _FLASH_NCR2                      0000505c   defined in Debug\main.o
 _FLASH_NFPR                      0000505e   defined in Debug\main.o
 _FLASH_PUKR                      00005062   defined in Debug\main.o
-_GPIO_DeInit                     0000851b   defined in Debug\stm8s_gpio.o section .text
-_GPIO_ExternalPullUpConfig       000085b5   defined in Debug\stm8s_gpio.o section .text
-_GPIO_Init                       00008523   defined in Debug\stm8s_gpio.o section .text
+_GPIO_DeInit                     00008525   defined in Debug\stm8s_gpio.o section .text
+_GPIO_ExternalPullUpConfig       000085bf   defined in Debug\stm8s_gpio.o section .text
+_GPIO_Init                       0000852d   defined in Debug\stm8s_gpio.o section .text
                                             used in Debug\main.o
-_GPIO_ReadInputData              000085ab   defined in Debug\stm8s_gpio.o section .text
-_GPIO_ReadInputPin               000085ae   defined in Debug\stm8s_gpio.o section .text
-_GPIO_ReadOutputData             000085a9   defined in Debug\stm8s_gpio.o section .text
-_GPIO_Write                      0000858b   defined in Debug\stm8s_gpio.o section .text
-_GPIO_WriteHigh                  00008593   defined in Debug\stm8s_gpio.o section .text
+_GPIO_ReadInputData              000085b5   defined in Debug\stm8s_gpio.o section .text
+_GPIO_ReadInputPin               000085b8   defined in Debug\stm8s_gpio.o section .text
+_GPIO_ReadOutputData             000085b3   defined in Debug\stm8s_gpio.o section .text
+_GPIO_Write                      00008595   defined in Debug\stm8s_gpio.o section .text
+_GPIO_WriteHigh                  0000859d   defined in Debug\stm8s_gpio.o section .text
                                             used in Debug\main.o
-_GPIO_WriteLow                   0000859a   defined in Debug\stm8s_gpio.o section .text
+_GPIO_WriteLow                   000085a4   defined in Debug\stm8s_gpio.o section .text
                                             used in Debug\main.o
-_GPIO_WriteReverse               000085a2   defined in Debug\stm8s_gpio.o section .text
+_GPIO_WriteReverse               000085ac   defined in Debug\stm8s_gpio.o section .text
 _HSIDivFactor                    00008080   defined in Debug\stm8s_clk.o section .const
 _I2C_CCRH                        0000521c   defined in Debug\main.o
 _I2C_CCRL                        0000521b   defined in Debug\main.o
@@ -417,8 +408,8 @@ _ITC_SPR7                        00007f76   defined in Debug\main.o
 _IWDG_KR                         000050e0   defined in Debug\main.o
 _IWDG_PR                         000050e1   defined in Debug\main.o
 _IWDG_RLR                        000050e2   defined in Debug\main.o
-_InitCLOCK                       0000810d   defined in Debug\main.o section .text
-_InitGPIO                        00008101   defined in Debug\main.o section .text
+_InitCLOCK                       00008145   defined in Debug\main.o section .text
+_InitGPIO                        00008139   defined in Debug\main.o section .text
 _PA_CR1                          00005003   defined in Debug\main.o
 _PA_CR2                          00005004   defined in Debug\main.o
 _PA_DDR                          00005002   defined in Debug\main.o
@@ -449,6 +440,7 @@ _PF_CR2                          0000501d   defined in Debug\main.o
 _PF_DDR                          0000501b   defined in Debug\main.o
 _PF_IDR                          0000501a   defined in Debug\main.o
 _PF_ODR                          00005019   defined in Debug\main.o
+_Pisca_LED                       00008116   defined in Debug\main.o section .text
 _RST_SR                          000050b3   defined in Debug\main.o
 _SPI_CR1                         00005200   defined in Debug\main.o
 _SPI_CR2                         00005201   defined in Debug\main.o
@@ -549,7 +541,7 @@ _WWDG_CR                         000050d1   defined in Debug\main.o
 _WWDG_WR                         000050d2   defined in Debug\main.o
 __endmem                         000001ff   defined in command file
                                             *** not used ***
-__endzp                          0000000a   defined in command file section .ubsct
+__endzp                          0000000b   defined in command file section .ubsct
                                             used in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8
 __idesc__                        0000808c   defined in linker section .init
                                             used in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8
@@ -559,46 +551,36 @@ __stack                          000003ff   defined in command file
                                             used in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8
 __startmem                       00000100   defined in command file section .bss
                                             *** not used ***
-__stext                          0000808f   defined in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8 section .text
+__stext                          00008095   defined in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8 section .text
                                             used in Debug\stm8_interrupt_vector.o
 __vectab                         00008000   defined in Debug\stm8_interrupt_vector.o section .const
-_exit                            000080dd   defined in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8 section .text
-_main                            000080df   defined in Debug\main.o section .text
+_estado_led                      00000000   defined in Debug\main.o section .bsct, initialized
+_exit                            000080e3   defined in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8 section .text
+_main                            000080e5   defined in Debug\main.o section .text
                                             used in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8
-c_bmulx                          000085cd   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)bmulx.o section .text
-                                            used in Debug\main.o
-c_divsl                          00008631   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o section .text
+c_divsl                          000085fd   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o section .text
                                             *** not used ***
-c_divul                          00008648   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o section .text
+c_divul                          00008614   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o section .text
                                             used in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ludiv.o
-c_lcmp                           000085db   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lcmp.o section .text
-                                            used in Debug\main.o
-c_lgadc                          000085fb   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lgadc.o section .text
-                                            used in Debug\main.o
-c_lgneg                          0000871c   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lgneg.o section .text
+c_lgneg                          000086e8   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lgneg.o section .text
                                             used in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o
-c_lneg                           0000872f   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lneg.o section .text
+c_lneg                           000086fb   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lneg.o section .text
                                             used in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o
-c_lreg                           00000000   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lreg.o section .ubsct
+c_lreg                           00000001   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lreg.o section .ubsct
                                             used in Debug\stm8s_clk.o
-                                                    (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lcmp.o
                                                     (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ltor.o
                                                     (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o
                                                     (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)lneg.o
                                                     (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)rtol.o
-                                                    (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)utolx.o
-c_ltor                           0000860b   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ltor.o section .text
+c_ltor                           000085d7   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ltor.o section .text
                                             used in Debug\stm8s_clk.o
-c_ludv                           0000861d   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ludiv.o section .text
+c_ludv                           000085e9   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ludiv.o section .text
                                             used in Debug\stm8s_clk.o
-c_rtol                           00008744   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)rtol.o section .text
+c_rtol                           00008710   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)rtol.o section .text
                                             used in Debug\stm8s_clk.o
-c_uitolx                         00008756   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)utolx.o section .text
-                                            used in Debug\main.o
-c_x                              00000004   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)xreg.o section .ubsct
+c_x                              00000005   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)xreg.o section .ubsct
                                             used in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8
-                                                    (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)bmulx.o
                                                     (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)ldiv.o
-c_y                              00000007   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)yreg.o section .ubsct
+c_y                              00000008   defined in (C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\libm0.sm8)yreg.o section .ubsct
                                             used in C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8\Lib\crtsi0.sm8
-f_NonHandledInterrupt            0000875d   defined in Debug\stm8_interrupt_vector.o section .text
+f_NonHandledInterrupt            00008722   defined in Debug\stm8_interrupt_vector.o section .text
