@@ -17,18 +17,18 @@ void delay_ms(uint16_t ms);       	// Função de atraso (delay em milissegundos)
 void main(void)
 {
     uint8_t led_state = 0;        	// Guarda o estado atual do LED (0 = desligado, 1 = ligado)
-		uint8_t last_button_state = 1; 	// Guarda o último estado lido do botão (1 = solto)
-		uint8_t current_button; 
+	uint8_t last_button_state = 1; 	// Guarda o último estado lido do botão (1 = solto)
+	uint8_t current_button; 		// Guardará o estado do botão na leitura atual
 
-		InitCLOCK();                   	// Configura o clock do microcontrolador
+	InitCLOCK();                   	// Configura o clock do microcontrolador
     InitGPIO();                    	// Configura os pinos de entrada e saída
 		
-		GPIO_WriteHigh(LED_PORT, LED_PIN);
     while (1)
     {
+		// Le o Estado do Botão
         current_button = ReadButton();
 
-        // Verifica se o botão foi pressionado (borda de descida)
+        // Verifica se o botão foi pressionado(borda de descida)
         if (last_button_state == 1 && current_button == 0)
         {
             led_state = !led_state; // Inverte o estado do LED (toggle)

@@ -20,11 +20,46 @@ void InitGPIO(void);                // Inicializa os pinos
 void InitCLOCK(void);              	// Inicializa o clock do sistema
 uint8_t ReadButton(void);          	// Lê o estado do botão
 void delay_ms(uint16_t ms);       	// Função de atraso (delay em milissegundos)
+void BlinkLed(uint8_t num_blinks, uint16_t blink_delay); 
 
 	
 main()
 {
-	while (1);
+	uint8_t last_button_state = 1; 			// Guarda o último estado lido do botão (1 = solto)
+	uint8_t current_button; 					  // Guardará o estado do botão na leitura atual
+	uint8_t button_action_pending = 0;	// variável de controle
+	
+	InitCLOCK();
+	InitGPIO();
+	
+	// Inicia com o Led apagado
+	GPIO_WriteLow(LED_PORT, LED_PIN);
+	
+	while (1)
+	{
+		current_button = ReadButton(); 		// CB recebe o valor do estado do Botão atual
+		
+		if (last_button_state == 1 && current_button == 0)
+		{
+			// Se o botão foi pressionado
+			if (button_action_pending == 0) // Garante que a ação ocorre uma vez por pressionamento
+			{
+				button_action_pending == 1;					// Marca que a ação do botão foi detectada
+				BlinkLed(3,1000);										// Pisca o LED 3 vezes (100ms on/off)
+				GPIO_WriteLow(LED_PORT, LED_PIN); 	// Garante que o LED fique apagado após piscar
+			}
+		}
+		
+		// reseta o flag quando o botão for solto
+		else if (last_button_state == 0 && current_button == 1)
+		{
+			button_action_pending = 0; // permite uma nova ação no próximo pressionamento
+		}
+		
+		// **Atualiza o estado do botão para a próxima iteração**
+        last_button_state = current_button;
+		
+	}
 }
 
 // Função para configurar os pinos de entrada e saída
@@ -54,6 +89,19 @@ void Delay_ms(uint16_t ms)
 	for (i = 0; i < (16000 / 1000) * ms; i++); // Assumindo clock de 16MHz
 }
 
+// Função para fazer o Led Piscar algumas vezes 
+void BlinkLed(uint8_t num_blinks, uint16_t blink_delay)
+{
+	uint8_t i; 
+	for(i=0; i < num_blinks; i++)
+	{
+		GPIO_WriteHigh(LED_PORT, LED_PIN);
+		Delay_ms(blink_delay);
+		GPIO_WriteLow(LED_PORT, LED_PIN);
+		Delay_ms(blink_delay);
+	}
+	
+}
 // Função para configurar o clock do sistema
 void InitCLOCK(void)
 {
