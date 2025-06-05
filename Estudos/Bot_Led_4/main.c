@@ -7,14 +7,14 @@
 #include "stm8s903k.h"
 
 // Define os pinos utilizados
-#define LED_01_PORT		GPIOE 		// Defnie a Porta do LED
+#define LED_01_PORT		GPIOE 			// Defnie a Porta do LED
 #define LED_01_PIN		GPIO_PIN_5		// Define o pino do LED
 
 #define LED_02_PORT 	GPIOC
 #define LED_02_PIN		GPIO_PIN_4
 
 #define BOTAO_PORT 		GPIOC			// define a porta do botão
-#define BOTAO_PIN			GPIO_PIN_3		// define o pino do botão
+#define BOTAO_PIN		GPIO_PIN_3		// define o pino do botão
 
 // Protótipos das funções
 void InitGPIO(void);                // Inicializa os pinos
