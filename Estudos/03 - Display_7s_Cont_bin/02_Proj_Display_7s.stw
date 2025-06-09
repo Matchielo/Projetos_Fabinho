@@ -1,0 +1,12 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=display_7s_cont_bit.stp
+Dependencies=
+[Options]
+ActiveProject=display_7s_cont_bit
+ActiveConfig=Debug
+AddSortedElements=1
