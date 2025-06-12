@@ -18,7 +18,7 @@
 #define SEG_C_PIN			GPIO_PIN_0
 
 #define SEG_D_PORT			GPIOD
-#define SEG_D_PIN			GPIO_PIN_1
+#define SEG_D_PIN			GPIO_PIN_5
 
 #define SEG_E_PORT			GPIOD
 #define SEG_E_PIN			GPIO_PIN_2
@@ -32,6 +32,10 @@
 // Definir pino do Botão
 #define BOTAO_PORT		GPIOC
 #define BOTAO_PIN			GPIO_PIN_4
+
+// Define o pino do Buzzer/LEDs
+#define LEDs_PORT			GPIOD
+#define LEDs_PIN			GPIO_PIN_7
 
 
 // --- Tabela de Padrões Binários para Dígitos (0-9) ---
@@ -58,23 +62,43 @@ const uint8_t digit_patterns[] =
 // Protótipo das funções
 void InitCLOCK(void);
 void InitGPIO(void);
-void Delay_ms(uint16_t ms);
+
+// Funções display
 void display_digit(uint8_t digit_value);
 void mostrardigitos(void);
+void Display_Off(void);
+
+// Acionamento do Botão
 uint8_t ReadButton(void);
 
+// Função Buzzer
+void LedBuzzer(uint8_t num_acionamento, uint16_t temp_acionamento);
+
+// Timer 4
 void Delay_ms_Timer(uint16_t ms);
 void InitTIM4(void); 
 
 main()
 {
+	uint8_t last_button_state = 1; 				// Guarda o último estado lido do botão (1 = solto)
+	uint8_t current_button; 					  	// Guardará o estado do botão na leitura atual
+		
 	InitCLOCK();
-	InitTIM4();     // AGORA CHAMA INITTIM4
+	InitTIM4();     
 	InitGPIO();
+	Display_Off();  
 	
 	while (1)
 	{
-		mostrardigitos();
+		current_button = ReadButton(); 		// Lê o estado atual do botão
+		
+		if (last_button_state == 1 && current_button == 0)
+			{
+				mostrardigitos();
+			}
+		// Atualiza o estado do botão para a próxima iteração
+		last_button_state = current_button;
+		Delay_ms_Timer(20); // Pequeno atraso para ajudar no debounce
 	}
 }
 
@@ -96,16 +120,31 @@ uint8_t ReadButton(void)
 	return (GPIO_ReadInputPin(BOTAO_PORT, BOTAO_PIN) == RESET);
 }
 
+// Função para acionar o LED eo Buzzer
+void LedBuzzer(uint8_t num_acionamento, uint16_t temp_acionamento)
+{
+	uint8_t i;
+	for (i = 0; i < num_acionamento; i++)
+	{
+		GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
+		Delay_ms_Timer(temp_acionamento);
+		GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+		Delay_ms_Timer(temp_acionamento);
+	}
+}
+
 void mostrardigitos(void)
 {
 	int i;
 	// Laço para exibir os dígitos de 0 a 9 sequencialmente
-		for (i = 0; i < 10; i++)
+		for (i = 9; i >= 0; i--)
 		{
 			display_digit(i); // Chama a função genérica para exibir o dígito 'i'
 			Delay_ms_Timer(1000);   // Espera 1 segundo
 		}
+		Display_Off(); // Apaga o display após terminar a contagem
 }
+
 // Configuração dos pinos do segmento
 void InitGPIO(void)
 {
@@ -118,15 +157,28 @@ void InitGPIO(void)
 	GPIO_Init(SEG_G_PORT, SEG_G_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
 }
 
+// Função para apagar todos os segmentos do display (Anodo Comum)
+void Display_Off(void)
+{
+    // Para apagar um display de anodo comum, todos os pinos de segmento devem ser HIGH.
+    GPIO_WriteLow(SEG_A_PORT, SEG_A_PIN);
+		GPIO_WriteLow(SEG_B_PORT, SEG_B_PIN);
+		GPIO_WriteLow(SEG_C_PORT, SEG_C_PIN);
+		GPIO_WriteLow(SEG_D_PORT, SEG_D_PIN);
+		GPIO_WriteLow(SEG_E_PORT, SEG_E_PIN);
+		GPIO_WriteLow(SEG_F_PORT, SEG_F_PIN);
+		GPIO_WriteHigh(SEG_G_PORT, SEG_G_PIN);
+}
+
 // Função para exibir o Dígito no display
 void display_digit(uint8_t digit_value)
 {
-    // Declaração de 'pattern' no início da função para compatibilidade C89
+    // Declaração de 'pattern' no início da funçãO
     uint8_t pattern;
 
 	// Verifica se o valor é válido (0-9)
 	// Se o valor não estiver dentro do intervalo, apaga o display
-	if (digit_value > 9)
+	if (digit_value < 0)
 	{
 		GPIO_WriteHigh(SEG_A_PORT, SEG_A_PIN);
 		GPIO_WriteHigh(SEG_B_PORT, SEG_B_PIN);
@@ -141,7 +193,7 @@ void display_digit(uint8_t digit_value)
 	// Obtém o padrão de bits da tabela para o dígito desejado
 	pattern = digit_patterns[digit_value];
 
-	// Controla cada segmento individualmente, usando a lógica de Ânodo Comum (0=ON, 1=OFF)
+	// Controla cada segmento individualmente
 	// O operador '!' inverte o bit para que 0 no 'pattern' resulte em TRUE (acender)
 	// e 1 no 'pattern' resulte em FALSE (apagar).
 	// O operador '>> N' desloca o bit N para a posição 0.
