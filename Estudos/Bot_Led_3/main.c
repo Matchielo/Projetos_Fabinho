@@ -1,6 +1,9 @@
 /* MAIN.C file
  * 
  * Copyright (c) 2002-2005 STMicroelectronics
+ 
+ * Programa para: Quando acionado o Botão, O LED vai piscar 3x e parar
+ 
  */
 
 // Puxa as Bibliotecas
@@ -47,7 +50,7 @@ main()
 				button_action_pending == 1;					// Marca que a ação do botão foi detectada
 				BlinkLed(3,1000);										// Pisca o LED 3 vezes (100ms on/off)
 				GPIO_WriteLow(LED_PORT, LED_PIN); 	// Garante que o LED fique apagado após piscar
-			}
+			}	
 		}
 		
 		// reseta o flag quando o botão for solto

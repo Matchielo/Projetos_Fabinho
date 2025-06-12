@@ -36,8 +36,10 @@
 // Protótipos das funções
 void InitGPIO(void);
 void InitCLOCK(void);
+
 void Delay_ms_Timer(uint16_t ms);
 void InitTIM4(void); // PROTÓTIPO AGORA É PARA O TIMER 4
+
 void Display_7s(int SEG);
 void contarDigitos(void);
 uint8_t ReadButton(void);

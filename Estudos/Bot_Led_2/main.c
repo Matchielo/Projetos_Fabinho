@@ -35,9 +35,13 @@ void main(void)
 
             // Liga ou desliga o LED de acordo com o novo estado
             if (led_state)
+			{
                 GPIO_WriteHigh(LED_PORT, LED_PIN);  // Liga o LED
+			}
             else
+			{
                 GPIO_WriteLow(LED_PORT, LED_PIN);   // Desliga o LED
+			}
 
             delay_ms(20); // Aguarda 20 ms para evitar múltiplos disparos (debounce)
         }

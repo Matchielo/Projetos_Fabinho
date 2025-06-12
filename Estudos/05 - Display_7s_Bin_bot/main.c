@@ -34,8 +34,8 @@
 #define BOTAO_PIN			GPIO_PIN_4
 
 // Define o pino do Buzzer/LEDs
-#define LEDs_PORT			GPIOD
-#define LEDs_PIN			GPIO_PIN_7
+#define BUZZER_PORT			GPIOD
+#define BUZZER_PIN			GPIO_PIN_7
 
 
 // --- Tabela de Padrões Binários para Dígitos (0-9) ---
@@ -142,12 +142,14 @@ void mostrardigitos(void)
 			display_digit(i); // Chama a função genérica para exibir o dígito 'i'
 			Delay_ms_Timer(1000);   // Espera 1 segundo
 		}
+		LedBuzzer (3,1000);
 		Display_Off(); // Apaga o display após terminar a contagem
 }
 
 // Configuração dos pinos do segmento
 void InitGPIO(void)
 {
+	// Definição dos pinos dos segmentos
 	GPIO_Init(SEG_A_PORT, SEG_A_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(SEG_B_PORT, SEG_B_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(SEG_C_PORT, SEG_C_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
@@ -155,6 +157,13 @@ void InitGPIO(void)
 	GPIO_Init(SEG_E_PORT, SEG_E_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(SEG_F_PORT, SEG_F_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(SEG_G_PORT, SEG_G_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
+	
+	// Configura o pino do botão como entrada pull up sem interrupção
+	GPIO_Init(BOTAO_PORT, BOTAO_PIN, GPIO_MODE_IN_PU_NO_IT);
+	
+	
+	// Definição dos pinos do Buzzer
+	GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 }
 
 // Função para apagar todos os segmentos do display (Anodo Comum)

@@ -1,0 +1,12 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=display_cis_testes.stp
+Dependencies=
+[Options]
+ActiveProject=display_cis_testes
+ActiveConfig=Debug
+AddSortedElements=1
