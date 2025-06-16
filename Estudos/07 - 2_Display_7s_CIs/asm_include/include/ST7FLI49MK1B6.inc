@@ -1,0 +1,2 @@
+; ST7FLI49MK1B6.inc
+	#include "ST7FLI49MK1T6.inc"
