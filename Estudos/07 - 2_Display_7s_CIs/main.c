@@ -55,7 +55,7 @@ void CONTAGEM(void)
 	uint8_t unidades;
 	uint8_t dezenas;
 
-	for(i = 0; i <= 24; i++)
+	for(i = 0; i <= 20; i++)
 	{
 		unidades = i % 10;
 		dezenas = i / 10;
