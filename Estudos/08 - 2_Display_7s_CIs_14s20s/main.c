@@ -47,88 +47,106 @@ void pulseLatch(GPIO_TypeDef* PORT, uint8_t PIN);
 void Contagem_14s(void);
 void Contagem_24s(void);
 
-uint8_t ReadButton_01(void);
-uint8_t ReadButton_02(void);
-void LED_BUZZER (uint8_t num_acm, uint16_t temp_acm);
-void EsperarBotaoSoltar(void);
+uint8_t ReadButton(GPIO_TypeDef* PORT, uint8_t PIN);
+void BUZZER (uint8_t num_acm, uint16_t temp_acm);
+void LED (uint8_t num_acm, uint16_t temp_acm);
 
 // ---------------------- Função Principal --------------------------
 void main(void)
 {
-	uint8_t last_button_state_01 = 1;
-	uint8_t last_button_state_02 = 1;
+	uint8_t last_state_btn1 = 1;
+	uint8_t last_state_btn2 = 1;
+	uint8_t current_state_btn1;
+	uint8_t current_state_btn2;
 	
-	uint8_t current_button_01;
-	uint8_t current_button_02;
-
 	InitCLOCK();
 	InitTIM4();
 	InitGPIO();
-	
-	while(1)
-	{
-			current_button_01 = ReadButton_01();
-			current_button_02 = ReadButton_02();
 
-			if (last_button_state_01 == 1 && current_button_01 == 0)
-			{
-				Contagem_14s();
-				LED_BUZZER(3, 500);
-			}
-
-			else if (last_button_state_02 == 1 && current_button_02 == 0)
-			{
-				Contagem_24s();
-				LED_BUZZER(3, 500);
-			}
-
-			last_button_state_01 = current_button_01;
-			last_button_state_02 = current_button_02;
-
-			Delay_ms_Timer(20);
-		
-	}
-}
-
-// ---------------------- Função para o Botão --------------------------
-uint8_t ReadButton_01(void)
+	while (1)
 {
-	return (GPIO_ReadInputPin(BOT_1_PORT,BOT_1_PIN) == RESET);
+    current_state_btn1 = ReadButton(BOT_1_PORT, BOT_1_PIN);
+    current_state_btn2 = ReadButton(BOT_2_PORT, BOT_2_PIN);
+
+    // BTN1 - Contagem de 14s
+    if ((last_state_btn1 == 1) && (current_state_btn1 == 0))
+    {
+        Delay_ms_Timer(50);  // Debounce
+        if (ReadButton(BOT_1_PORT, BOT_1_PIN) == 0)  // Confirma se continua pressionado
+        {
+            Contagem_14s();
+            BUZZER(1, 500);
+        }
+    }
+
+    // BTN2 - Contagem de 24s
+    if ((last_state_btn2 == 1) && (current_state_btn2 == 0))
+    {
+        Delay_ms_Timer(50);  // Debounce
+        if (ReadButton(BOT_2_PORT, BOT_2_PIN) == 0)  // Confirma se continua pressionado
+        {
+            Contagem_24s();
+            BUZZER(1, 500);
+        }
+    }
+
+    last_state_btn1 = current_state_btn1;
+    last_state_btn2 = current_state_btn2;
+
+    Delay_ms_Timer(20);  // Pequeno delay no loop principal
 }
 
-uint8_t ReadButton_02(void)
+}
+
+// ---------------------- Leitura do Botão --------------------------
+uint8_t ReadButton(GPIO_TypeDef* PORT, uint8_t PIN)
 {
-	return (GPIO_ReadInputPin(BOT_2_PORT,BOT_2_PIN) == RESET);
+	return (GPIO_ReadInputPin(PORT, PIN) == RESET) ? 0 : 1;
 }
 
-
-// ---------------------- Função para acionar o LED e o Buzzer --------------------------
-void LED_BUZZER (uint8_t num_acm, uint16_t temp_acm)
+// ---------------------- Função para o LED e Buzzer --------------------------
+void BUZZER (uint8_t num_acm, uint16_t temp_acm)
 {
 	uint8_t i;
 	for(i = 0; i < num_acm; i++)
 	{
 		GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
-		
-		GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
-		GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
-		GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
-		GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
-		
+		LED(4, 500);
 		Delay_ms_Timer(temp_acm);
-		
+
 		GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+		Delay_ms_Timer(temp_acm);
+	}
+}
+
+// ---------------------- Função para o LED e Buzzer --------------------------
+void LED (uint8_t num_acm, uint16_t temp_acm)
+{
+	uint8_t i;
+	for(i = 0; i < num_acm; i++)
+	{
 		
 		GPIO_WriteHigh(LD_A_PORT, LD_A_PIN);
 		GPIO_WriteHigh(LD_B_PORT, LD_B_PIN);
 		GPIO_WriteHigh(LD_C_PORT, LD_C_PIN);
 		GPIO_WriteHigh(LD_D_PORT, LD_D_PIN);
-		
+		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
+		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+
+		Delay_ms_Timer(temp_acm);
+
+		GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
+		GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
+		GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
+		GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
+		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
+		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+
 		Delay_ms_Timer(temp_acm);
 	}
 }
 
-// ---------------------- Função de Contagem --------------------------
+// ---------------------- Contagem 14s --------------------------
 void Contagem_14s(void)
 {
 	int i;
@@ -150,6 +168,7 @@ void Contagem_14s(void)
 	}
 }
 
+// ---------------------- Contagem 24s --------------------------
 void Contagem_24s(void)
 {
 	int i;
@@ -171,31 +190,16 @@ void Contagem_24s(void)
 	}
 }
 
-// ---------------------- Função para enviar BCD aos pinos --------------------------
+// ---------------------- Função BCD --------------------------
 void writeBCD(uint8_t valor)
 {
-	if(valor & 0x01)
-		GPIO_WriteHigh(LD_A_PORT, LD_A_PIN);
-	else
-		GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
-
-	if(valor & 0x02)
-		GPIO_WriteHigh(LD_B_PORT, LD_B_PIN);
-	else
-		GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
-
-	if(valor & 0x04)
-		GPIO_WriteHigh(LD_C_PORT, LD_C_PIN);
-	else
-		GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
-
-	if(valor & 0x08)
-		GPIO_WriteHigh(LD_D_PORT, LD_D_PIN);
-	else
-		GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
+	(valor & 0x01) ? GPIO_WriteHigh(LD_A_PORT, LD_A_PIN) : GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
+	(valor & 0x02) ? GPIO_WriteHigh(LD_B_PORT, LD_B_PIN) : GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
+	(valor & 0x04) ? GPIO_WriteHigh(LD_C_PORT, LD_C_PIN) : GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
+	(valor & 0x08) ? GPIO_WriteHigh(LD_D_PORT, LD_D_PIN) : GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
 }
 
-// ---------------------- Pulso no Latch --------------------------
+// ---------------------- Pulso de Latch --------------------------
 void pulseLatch(GPIO_TypeDef* PORT, uint8_t PIN)
 {
 	GPIO_WriteHigh(PORT, PIN);
@@ -203,24 +207,24 @@ void pulseLatch(GPIO_TypeDef* PORT, uint8_t PIN)
 	GPIO_WriteLow(PORT, PIN);
 }
 
-// ---------------------- Inicialização do GPIO --------------------------
+// ---------------------- Inicialização GPIO --------------------------
 void InitGPIO(void)
 {
 	GPIO_Init(LD_A_PORT, LD_A_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 	GPIO_Init(LD_B_PORT, LD_B_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 	GPIO_Init(LD_C_PORT, LD_C_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 	GPIO_Init(LD_D_PORT, LD_D_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-	
+
 	GPIO_Init(LATCH_01_PORT, LATCH_01_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 	GPIO_Init(LATCH_02_PORT, LATCH_02_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-	
+
 	GPIO_Init(BOT_1_PORT, BOT_1_PIN, GPIO_MODE_IN_PU_NO_IT);
 	GPIO_Init(BOT_2_PORT, BOT_2_PIN, GPIO_MODE_IN_PU_NO_IT);
-	
+
 	GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 }
 
-// ---------------------- Inicialização do Clock --------------------------
+// ---------------------- Inicialização CLOCK --------------------------
 void InitCLOCK(void)
 {
 	CLK_DeInit();
@@ -244,7 +248,7 @@ void InitCLOCK(void)
 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER4, ENABLE);
 }
 
-// ---------------------- Inicialização do Timer 4 --------------------------
+// ---------------------- Inicialização TIMER4 --------------------------
 void InitTIM4(void)
 {
 	TIM4_PrescalerConfig(TIM4_PRESCALER_128, TIM4_PSCRELOADMODE_IMMEDIATE);
@@ -253,7 +257,7 @@ void InitTIM4(void)
 	TIM4_Cmd(ENABLE);
 }
 
-// ---------------------- Delay em ms usando Timer 4 --------------------------
+// ---------------------- Função Delay --------------------------
 void Delay_ms_Timer(uint16_t ms)
 {
 	while(ms--)

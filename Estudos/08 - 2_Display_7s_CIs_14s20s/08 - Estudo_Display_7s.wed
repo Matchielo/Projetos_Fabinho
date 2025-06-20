@@ -56,7 +56,7 @@ ptn_Child45=Bar-44
 
 [WorkState_v1_2.DockState.Bar-0]
 BarID=59419
-Bars=234
+Bars=244
 Bar#0=0
 Bar#1=59647
 Bar#2=0
@@ -291,6 +291,16 @@ Bar#230=0
 Bar#231=0
 Bar#232=0
 Bar#233=0
+Bar#234=0
+Bar#235=0
+Bar#236=0
+Bar#237=0
+Bar#238=0
+Bar#239=0
+Bar#240=0
+Bar#241=0
+Bar#242=0
+Bar#243=0
 Style=0
 ExStyle=0
 PrevFloating=False
@@ -417,7 +427,7 @@ ResourceID=0
 
 [WorkState_v1_2.DockState.Bar-4]
 BarID=59420
-Bars=180
+Bars=188
 Bar#0=0
 Bar#1=5708
 Bar#2=5720
@@ -598,6 +608,14 @@ Bar#176=0
 Bar#177=0
 Bar#178=0
 Bar#179=0
+Bar#180=0
+Bar#181=0
+Bar#182=0
+Bar#183=0
+Bar#184=0
+Bar#185=0
+Bar#186=0
+Bar#187=0
 Style=0
 ExStyle=0
 PrevFloating=False
@@ -1124,10 +1142,10 @@ XPos=1
 YPos=-2
 Docking=True
 MRUDockID=0
-MRUDockLeftPos=1
-MRUDockTopPos=-2
-MRUDockRightPos=251
-MRUDockBottomPos=439
+MRUDockLeftPos=8
+MRUDockTopPos=31
+MRUDockRightPos=258
+MRUDockBottomPos=472
 MRUFloatStyle=4
 MRUFloatXPos=-1
 MRUFloatYPos=0
@@ -1158,10 +1176,10 @@ XPos=1
 YPos=5
 Docking=True
 MRUDockID=0
-MRUDockLeftPos=8
-MRUDockTopPos=31
-MRUDockRightPos=1373
-MRUDockBottomPos=181
+MRUDockLeftPos=1
+MRUDockTopPos=5
+MRUDockRightPos=1366
+MRUDockBottomPos=155
 MRUFloatStyle=4
 MRUFloatXPos=-1
 MRUFloatYPos=0
@@ -1193,10 +1211,10 @@ XPos=5
 YPos=-2
 Docking=True
 MRUDockID=0
-MRUDockLeftPos=5
-MRUDockTopPos=-2
-MRUDockRightPos=155
-MRUDockBottomPos=439
+MRUDockLeftPos=8
+MRUDockTopPos=31
+MRUDockRightPos=158
+MRUDockBottomPos=472
 MRUFloatStyle=4
 MRUFloatXPos=-1
 MRUFloatYPos=0
@@ -2052,6 +2070,7 @@ Title=ST Visual Develop - 08 - Estudo_Display_7s.stw* - [main.c]
 
 [WorkState_v1_2.Frames.ChildFrames]
 ptn_Child1=Document-0
+ptn_Child2=Document-1
 
 [WorkState_v1_2.Frames.ChildFrames.Document-0]
 ptn_Child1=ViewFrame-0
@@ -2062,4 +2081,15 @@ DocumentString=
 DocTemplateIndex=0
 WindowPlacement=MCAAAAAACAAAAAAADAAAAAAAPPPPPPPPPPPPPPPPIPPPPPPPBOPPPPPPKBAAAAAAKBAAAAAAJODAAAAAHDBAAAAA
 IsActiveChildFrame=True
+IsFrameVisible=True
+
+[WorkState_v1_2.Frames.ChildFrames.Document-1]
+ptn_Child1=ViewFrame-0
+
+[WorkState_v1_2.Frames.ChildFrames.Document-1.ViewFrame-0]
+DocPathName=stm8s_stdperiph_driver\src\stm8s_tim4.c
+DocumentString=
+DocTemplateIndex=0
+WindowPlacement=MCAAAAAAAAAAAAAABAAAAAAAPPPPPPPPPPPPPPPPIPPPPPPPBOPPPPPPKBAAAAAAKBAAAAAANNCAAAAABCBAAAAA
+IsActiveChildFrame=False
 IsFrameVisible=True

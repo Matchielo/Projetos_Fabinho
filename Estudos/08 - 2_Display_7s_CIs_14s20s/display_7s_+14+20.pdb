@@ -28,9 +28,9 @@ FormatParameters=0
 [DebugState_v1-Debug.AddOn.St7Registers]
 ActiveTab=2
 [DebugState_v1-Debug.AddOn.St7PeripheralRegister]
-DisplayFormat=1
+DisplayFormat=3
 ShowPeriphAddress=0
-ShowRegisterAddress=1
+ShowRegisterAddress=0
 [DebugState_v1-Debug.AddOn.St7McuIcdConf]
 McuName=STM8S903K3
 [DebugState_v1-Debug.AddOn.IcdBreak]

@@ -1,589 +1,644 @@
    1                     ; C Compiler for STM8 (COSMIC Software)
    2                     ; Parser V4.13.2 - 04 Jun 2024
    3                     ; Generator (Limited) V4.6.4 - 15 Jan 2025
-2664                     ; 56 void main(void)
-2664                     ; 57 {
-2666                     	switch	.text
-2667  0000               _main:
-2669  0000 5204          	subw	sp,#4
-2670       00000004      OFST:	set	4
-2673                     ; 58 	uint8_t last_button_state_01 = 1;
-2675  0002 a601          	ld	a,#1
-2676  0004 6b01          	ld	(OFST-3,sp),a
-2678                     ; 59 	uint8_t last_button_state_02 = 1;
-2680  0006 a601          	ld	a,#1
-2681  0008 6b02          	ld	(OFST-2,sp),a
-2683                     ; 64 	InitCLOCK();
-2685  000a cd0271        	call	_InitCLOCK
-2687                     ; 65 	InitTIM4();
-2689  000d cd02cc        	call	_InitTIM4
-2691                     ; 66 	InitGPIO();
-2693  0010 cd020d        	call	_InitGPIO
-2695  0013               L3171:
-2696                     ; 70 			current_button_01 = ReadButton_01();
-2698  0013 ad44          	call	_ReadButton_01
-2700  0015 6b03          	ld	(OFST-1,sp),a
-2702                     ; 71 			current_button_02 = ReadButton_02();
-2704  0017 ad53          	call	_ReadButton_02
-2706  0019 6b04          	ld	(OFST+0,sp),a
-2708                     ; 73 			if (last_button_state_01 == 1 && current_button_01 == 0)
-2710  001b 7b01          	ld	a,(OFST-3,sp)
-2711  001d a101          	cp	a,#1
-2712  001f 2612          	jrne	L7171
-2714  0021 0d03          	tnz	(OFST-1,sp)
-2715  0023 260e          	jrne	L7171
-2716                     ; 75 				Contagem_14s();
-2718  0025 cd00f3        	call	_Contagem_14s
-2720                     ; 76 				LED_BUZZER(3, 500);
-2722  0028 ae01f4        	ldw	x,#500
-2723  002b 89            	pushw	x
-2724  002c a603          	ld	a,#3
-2725  002e ad4f          	call	_LED_BUZZER
-2727  0030 85            	popw	x
-2729  0031 2016          	jra	L1271
-2730  0033               L7171:
-2731                     ; 79 			else if (last_button_state_02 == 1 && current_button_02 == 0)
-2733  0033 7b02          	ld	a,(OFST-2,sp)
-2734  0035 a101          	cp	a,#1
-2735  0037 2610          	jrne	L1271
-2737  0039 0d04          	tnz	(OFST+0,sp)
-2738  003b 260c          	jrne	L1271
-2739                     ; 81 				Contagem_24s();
-2741  003d cd013f        	call	_Contagem_24s
-2743                     ; 82 				LED_BUZZER(3, 500);
-2745  0040 ae01f4        	ldw	x,#500
-2746  0043 89            	pushw	x
-2747  0044 a603          	ld	a,#3
-2748  0046 ad37          	call	_LED_BUZZER
-2750  0048 85            	popw	x
-2751  0049               L1271:
-2752                     ; 85 			last_button_state_01 = current_button_01;
-2754  0049 7b03          	ld	a,(OFST-1,sp)
-2755  004b 6b01          	ld	(OFST-3,sp),a
-2757                     ; 86 			last_button_state_02 = current_button_02;
-2759  004d 7b04          	ld	a,(OFST+0,sp)
-2760  004f 6b02          	ld	(OFST-2,sp),a
-2762                     ; 88 			Delay_ms_Timer(20);
-2764  0051 ae0014        	ldw	x,#20
-2765  0054 cd02e3        	call	_Delay_ms_Timer
-2768  0057 20ba          	jra	L3171
-2792                     ; 94 uint8_t ReadButton_01(void)
-2792                     ; 95 {
-2793                     	switch	.text
-2794  0059               _ReadButton_01:
-2798                     ; 96 	return (GPIO_ReadInputPin(BOT_1_PORT,BOT_1_PIN) == RESET);
-2800  0059 4b40          	push	#64
-2801  005b ae500a        	ldw	x,#20490
-2802  005e cd0000        	call	_GPIO_ReadInputPin
-2804  0061 5b01          	addw	sp,#1
-2805  0063 4d            	tnz	a
-2806  0064 2604          	jrne	L01
-2807  0066 a601          	ld	a,#1
-2808  0068 2001          	jra	L21
-2809  006a               L01:
-2810  006a 4f            	clr	a
-2811  006b               L21:
-2814  006b 81            	ret
-2838                     ; 99 uint8_t ReadButton_02(void)
-2838                     ; 100 {
-2839                     	switch	.text
-2840  006c               _ReadButton_02:
-2844                     ; 101 	return (GPIO_ReadInputPin(BOT_2_PORT,BOT_2_PIN) == RESET);
-2846  006c 4b80          	push	#128
-2847  006e ae500a        	ldw	x,#20490
-2848  0071 cd0000        	call	_GPIO_ReadInputPin
-2850  0074 5b01          	addw	sp,#1
-2851  0076 4d            	tnz	a
-2852  0077 2604          	jrne	L61
-2853  0079 a601          	ld	a,#1
-2854  007b 2001          	jra	L02
-2855  007d               L61:
-2856  007d 4f            	clr	a
-2857  007e               L02:
-2860  007e 81            	ret
-2915                     ; 106 void LED_BUZZER (uint8_t num_acm, uint16_t temp_acm)
-2915                     ; 107 {
-2916                     	switch	.text
-2917  007f               _LED_BUZZER:
-2919  007f 88            	push	a
-2920  0080 88            	push	a
-2921       00000001      OFST:	set	1
-2924                     ; 109 	for(i = 0; i < num_acm; i++)
-2926  0081 0f01          	clr	(OFST+0,sp)
-2929  0083 2066          	jra	L7771
-2930  0085               L3771:
-2931                     ; 111 		GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
-2933  0085 4b01          	push	#1
-2934  0087 ae500f        	ldw	x,#20495
-2935  008a cd0000        	call	_GPIO_WriteHigh
-2937  008d 84            	pop	a
-2938                     ; 113 		GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
-2940  008e 4b01          	push	#1
-2941  0090 ae5005        	ldw	x,#20485
-2942  0093 cd0000        	call	_GPIO_WriteLow
-2944  0096 84            	pop	a
-2945                     ; 114 		GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
-2947  0097 4b02          	push	#2
-2948  0099 ae5005        	ldw	x,#20485
-2949  009c cd0000        	call	_GPIO_WriteLow
-2951  009f 84            	pop	a
-2952                     ; 115 		GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
-2954  00a0 4b04          	push	#4
-2955  00a2 ae5005        	ldw	x,#20485
-2956  00a5 cd0000        	call	_GPIO_WriteLow
-2958  00a8 84            	pop	a
-2959                     ; 116 		GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
-2961  00a9 4b08          	push	#8
-2962  00ab ae5005        	ldw	x,#20485
-2963  00ae cd0000        	call	_GPIO_WriteLow
-2965  00b1 84            	pop	a
-2966                     ; 118 		Delay_ms_Timer(temp_acm);
-2968  00b2 1e05          	ldw	x,(OFST+4,sp)
-2969  00b4 cd02e3        	call	_Delay_ms_Timer
-2971                     ; 120 		GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
-2973  00b7 4b01          	push	#1
-2974  00b9 ae500f        	ldw	x,#20495
-2975  00bc cd0000        	call	_GPIO_WriteLow
-2977  00bf 84            	pop	a
-2978                     ; 122 		GPIO_WriteHigh(LD_A_PORT, LD_A_PIN);
-2980  00c0 4b01          	push	#1
-2981  00c2 ae5005        	ldw	x,#20485
-2982  00c5 cd0000        	call	_GPIO_WriteHigh
-2984  00c8 84            	pop	a
-2985                     ; 123 		GPIO_WriteHigh(LD_B_PORT, LD_B_PIN);
-2987  00c9 4b02          	push	#2
-2988  00cb ae5005        	ldw	x,#20485
-2989  00ce cd0000        	call	_GPIO_WriteHigh
-2991  00d1 84            	pop	a
-2992                     ; 124 		GPIO_WriteHigh(LD_C_PORT, LD_C_PIN);
-2994  00d2 4b04          	push	#4
-2995  00d4 ae5005        	ldw	x,#20485
-2996  00d7 cd0000        	call	_GPIO_WriteHigh
-2998  00da 84            	pop	a
-2999                     ; 125 		GPIO_WriteHigh(LD_D_PORT, LD_D_PIN);
-3001  00db 4b08          	push	#8
-3002  00dd ae5005        	ldw	x,#20485
-3003  00e0 cd0000        	call	_GPIO_WriteHigh
-3005  00e3 84            	pop	a
-3006                     ; 127 		Delay_ms_Timer(temp_acm);
-3008  00e4 1e05          	ldw	x,(OFST+4,sp)
-3009  00e6 cd02e3        	call	_Delay_ms_Timer
-3011                     ; 109 	for(i = 0; i < num_acm; i++)
-3013  00e9 0c01          	inc	(OFST+0,sp)
-3015  00eb               L7771:
-3018  00eb 7b01          	ld	a,(OFST+0,sp)
-3019  00ed 1102          	cp	a,(OFST+1,sp)
-3020  00ef 2594          	jrult	L3771
-3021                     ; 129 }
-3024  00f1 85            	popw	x
-3025  00f2 81            	ret
-3080                     ; 132 void Contagem_14s(void)
-3080                     ; 133 {
-3081                     	switch	.text
-3082  00f3               _Contagem_14s:
-3084  00f3 5204          	subw	sp,#4
-3085       00000004      OFST:	set	4
-3088                     ; 138 	for(i = 14; i >= 0; i--)
-3090  00f5 ae000e        	ldw	x,#14
-3091  00f8 1f03          	ldw	(OFST-1,sp),x
-3093  00fa               L1302:
-3094                     ; 140 		unidades = i % 10;
-3096  00fa 1e03          	ldw	x,(OFST-1,sp)
-3097  00fc a60a          	ld	a,#10
-3098  00fe cd0000        	call	c_smodx
-3100  0101 01            	rrwa	x,a
-3101  0102 6b01          	ld	(OFST-3,sp),a
-3102  0104 02            	rlwa	x,a
-3104                     ; 141 		dezenas = i / 10;
-3106  0105 1e03          	ldw	x,(OFST-1,sp)
-3107  0107 a60a          	ld	a,#10
-3108  0109 cd0000        	call	c_sdivx
-3110  010c 01            	rrwa	x,a
-3111  010d 6b02          	ld	(OFST-2,sp),a
-3112  010f 02            	rlwa	x,a
-3114                     ; 143 		writeBCD(unidades);
-3116  0110 7b01          	ld	a,(OFST-3,sp)
-3117  0112 ad77          	call	_writeBCD
-3119                     ; 144 		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
-3121  0114 4b04          	push	#4
-3122  0116 ae500a        	ldw	x,#20490
-3123  0119 cd01f4        	call	_pulseLatch
-3125  011c 84            	pop	a
-3126                     ; 146 		writeBCD(dezenas);
-3128  011d 7b02          	ld	a,(OFST-2,sp)
-3129  011f ad6a          	call	_writeBCD
-3131                     ; 147 		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
-3133  0121 4b02          	push	#2
-3134  0123 ae500a        	ldw	x,#20490
-3135  0126 cd01f4        	call	_pulseLatch
-3137  0129 84            	pop	a
-3138                     ; 149 		Delay_ms_Timer(1000);
-3140  012a ae03e8        	ldw	x,#1000
-3141  012d cd02e3        	call	_Delay_ms_Timer
-3143                     ; 138 	for(i = 14; i >= 0; i--)
-3145  0130 1e03          	ldw	x,(OFST-1,sp)
-3146  0132 1d0001        	subw	x,#1
-3147  0135 1f03          	ldw	(OFST-1,sp),x
-3151  0137 9c            	rvf
-3152  0138 1e03          	ldw	x,(OFST-1,sp)
-3153  013a 2ebe          	jrsge	L1302
-3154                     ; 151 }
-3157  013c 5b04          	addw	sp,#4
-3158  013e 81            	ret
-3213                     ; 153 void Contagem_24s(void)
-3213                     ; 154 {
-3214                     	switch	.text
-3215  013f               _Contagem_24s:
-3217  013f 5204          	subw	sp,#4
-3218       00000004      OFST:	set	4
-3221                     ; 159 	for(i = 24; i >= 0; i--)
-3223  0141 ae0018        	ldw	x,#24
-3224  0144 1f03          	ldw	(OFST-1,sp),x
-3226  0146               L5602:
-3227                     ; 161 		unidades = i % 10;
-3229  0146 1e03          	ldw	x,(OFST-1,sp)
-3230  0148 a60a          	ld	a,#10
-3231  014a cd0000        	call	c_smodx
-3233  014d 01            	rrwa	x,a
-3234  014e 6b01          	ld	(OFST-3,sp),a
-3235  0150 02            	rlwa	x,a
-3237                     ; 162 		dezenas = i / 10;
-3239  0151 1e03          	ldw	x,(OFST-1,sp)
-3240  0153 a60a          	ld	a,#10
-3241  0155 cd0000        	call	c_sdivx
-3243  0158 01            	rrwa	x,a
-3244  0159 6b02          	ld	(OFST-2,sp),a
-3245  015b 02            	rlwa	x,a
-3247                     ; 164 		writeBCD(unidades);
-3249  015c 7b01          	ld	a,(OFST-3,sp)
-3250  015e ad2b          	call	_writeBCD
-3252                     ; 165 		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
-3254  0160 4b04          	push	#4
-3255  0162 ae500a        	ldw	x,#20490
-3256  0165 cd01f4        	call	_pulseLatch
-3258  0168 84            	pop	a
-3259                     ; 167 		writeBCD(dezenas);
-3261  0169 7b02          	ld	a,(OFST-2,sp)
-3262  016b ad1e          	call	_writeBCD
-3264                     ; 168 		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
-3266  016d 4b02          	push	#2
-3267  016f ae500a        	ldw	x,#20490
-3268  0172 cd01f4        	call	_pulseLatch
-3270  0175 84            	pop	a
-3271                     ; 170 		Delay_ms_Timer(1000);
-3273  0176 ae03e8        	ldw	x,#1000
-3274  0179 cd02e3        	call	_Delay_ms_Timer
-3276                     ; 159 	for(i = 24; i >= 0; i--)
-3278  017c 1e03          	ldw	x,(OFST-1,sp)
-3279  017e 1d0001        	subw	x,#1
-3280  0181 1f03          	ldw	(OFST-1,sp),x
-3284  0183 9c            	rvf
-3285  0184 1e03          	ldw	x,(OFST-1,sp)
-3286  0186 2ebe          	jrsge	L5602
-3287                     ; 172 }
-3290  0188 5b04          	addw	sp,#4
-3291  018a 81            	ret
-3327                     ; 175 void writeBCD(uint8_t valor)
-3327                     ; 176 {
-3328                     	switch	.text
-3329  018b               _writeBCD:
-3331  018b 88            	push	a
-3332       00000000      OFST:	set	0
-3335                     ; 177 	if(valor & 0x01)
-3337  018c a501          	bcp	a,#1
-3338  018e 270b          	jreq	L1112
-3339                     ; 178 		GPIO_WriteHigh(LD_A_PORT, LD_A_PIN);
-3341  0190 4b01          	push	#1
-3342  0192 ae5005        	ldw	x,#20485
-3343  0195 cd0000        	call	_GPIO_WriteHigh
-3345  0198 84            	pop	a
-3347  0199 2009          	jra	L3112
-3348  019b               L1112:
-3349                     ; 180 		GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
-3351  019b 4b01          	push	#1
-3352  019d ae5005        	ldw	x,#20485
-3353  01a0 cd0000        	call	_GPIO_WriteLow
-3355  01a3 84            	pop	a
-3356  01a4               L3112:
-3357                     ; 182 	if(valor & 0x02)
-3359  01a4 7b01          	ld	a,(OFST+1,sp)
-3360  01a6 a502          	bcp	a,#2
-3361  01a8 270b          	jreq	L5112
-3362                     ; 183 		GPIO_WriteHigh(LD_B_PORT, LD_B_PIN);
-3364  01aa 4b02          	push	#2
-3365  01ac ae5005        	ldw	x,#20485
-3366  01af cd0000        	call	_GPIO_WriteHigh
-3368  01b2 84            	pop	a
-3370  01b3 2009          	jra	L7112
-3371  01b5               L5112:
-3372                     ; 185 		GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
-3374  01b5 4b02          	push	#2
-3375  01b7 ae5005        	ldw	x,#20485
-3376  01ba cd0000        	call	_GPIO_WriteLow
-3378  01bd 84            	pop	a
-3379  01be               L7112:
-3380                     ; 187 	if(valor & 0x04)
-3382  01be 7b01          	ld	a,(OFST+1,sp)
-3383  01c0 a504          	bcp	a,#4
-3384  01c2 270b          	jreq	L1212
-3385                     ; 188 		GPIO_WriteHigh(LD_C_PORT, LD_C_PIN);
-3387  01c4 4b04          	push	#4
-3388  01c6 ae5005        	ldw	x,#20485
-3389  01c9 cd0000        	call	_GPIO_WriteHigh
-3391  01cc 84            	pop	a
-3393  01cd 2009          	jra	L3212
-3394  01cf               L1212:
-3395                     ; 190 		GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
-3397  01cf 4b04          	push	#4
-3398  01d1 ae5005        	ldw	x,#20485
-3399  01d4 cd0000        	call	_GPIO_WriteLow
-3401  01d7 84            	pop	a
-3402  01d8               L3212:
-3403                     ; 192 	if(valor & 0x08)
-3405  01d8 7b01          	ld	a,(OFST+1,sp)
-3406  01da a508          	bcp	a,#8
-3407  01dc 270b          	jreq	L5212
-3408                     ; 193 		GPIO_WriteHigh(LD_D_PORT, LD_D_PIN);
-3410  01de 4b08          	push	#8
-3411  01e0 ae5005        	ldw	x,#20485
-3412  01e3 cd0000        	call	_GPIO_WriteHigh
-3414  01e6 84            	pop	a
-3416  01e7 2009          	jra	L7212
-3417  01e9               L5212:
-3418                     ; 195 		GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
-3420  01e9 4b08          	push	#8
-3421  01eb ae5005        	ldw	x,#20485
-3422  01ee cd0000        	call	_GPIO_WriteLow
-3424  01f1 84            	pop	a
-3425  01f2               L7212:
-3426                     ; 196 }
-3429  01f2 84            	pop	a
-3430  01f3 81            	ret
-3531                     ; 199 void pulseLatch(GPIO_TypeDef* PORT, uint8_t PIN)
-3531                     ; 200 {
-3532                     	switch	.text
-3533  01f4               _pulseLatch:
-3535  01f4 89            	pushw	x
-3536       00000000      OFST:	set	0
-3539                     ; 201 	GPIO_WriteHigh(PORT, PIN);
-3541  01f5 7b05          	ld	a,(OFST+5,sp)
-3542  01f7 88            	push	a
-3543  01f8 cd0000        	call	_GPIO_WriteHigh
-3545  01fb 84            	pop	a
-3546                     ; 202 	Delay_ms_Timer(1);
-3548  01fc ae0001        	ldw	x,#1
-3549  01ff cd02e3        	call	_Delay_ms_Timer
-3551                     ; 203 	GPIO_WriteLow(PORT, PIN);
-3553  0202 7b05          	ld	a,(OFST+5,sp)
-3554  0204 88            	push	a
-3555  0205 1e02          	ldw	x,(OFST+2,sp)
-3556  0207 cd0000        	call	_GPIO_WriteLow
-3558  020a 84            	pop	a
-3559                     ; 204 }
-3562  020b 85            	popw	x
-3563  020c 81            	ret
-3587                     ; 207 void InitGPIO(void)
-3587                     ; 208 {
-3588                     	switch	.text
-3589  020d               _InitGPIO:
-3593                     ; 209 	GPIO_Init(LD_A_PORT, LD_A_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-3595  020d 4be0          	push	#224
-3596  020f 4b01          	push	#1
-3597  0211 ae5005        	ldw	x,#20485
-3598  0214 cd0000        	call	_GPIO_Init
-3600  0217 85            	popw	x
-3601                     ; 210 	GPIO_Init(LD_B_PORT, LD_B_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-3603  0218 4be0          	push	#224
-3604  021a 4b02          	push	#2
-3605  021c ae5005        	ldw	x,#20485
-3606  021f cd0000        	call	_GPIO_Init
-3608  0222 85            	popw	x
-3609                     ; 211 	GPIO_Init(LD_C_PORT, LD_C_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-3611  0223 4be0          	push	#224
-3612  0225 4b04          	push	#4
-3613  0227 ae5005        	ldw	x,#20485
-3614  022a cd0000        	call	_GPIO_Init
-3616  022d 85            	popw	x
-3617                     ; 212 	GPIO_Init(LD_D_PORT, LD_D_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-3619  022e 4be0          	push	#224
-3620  0230 4b08          	push	#8
-3621  0232 ae5005        	ldw	x,#20485
-3622  0235 cd0000        	call	_GPIO_Init
-3624  0238 85            	popw	x
-3625                     ; 214 	GPIO_Init(LATCH_01_PORT, LATCH_01_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-3627  0239 4be0          	push	#224
-3628  023b 4b04          	push	#4
-3629  023d ae500a        	ldw	x,#20490
-3630  0240 cd0000        	call	_GPIO_Init
-3632  0243 85            	popw	x
-3633                     ; 215 	GPIO_Init(LATCH_02_PORT, LATCH_02_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-3635  0244 4be0          	push	#224
-3636  0246 4b02          	push	#2
-3637  0248 ae500a        	ldw	x,#20490
-3638  024b cd0000        	call	_GPIO_Init
-3640  024e 85            	popw	x
-3641                     ; 217 	GPIO_Init(BOT_1_PORT, BOT_1_PIN, GPIO_MODE_IN_PU_NO_IT);
-3643  024f 4b40          	push	#64
-3644  0251 4b40          	push	#64
-3645  0253 ae500a        	ldw	x,#20490
-3646  0256 cd0000        	call	_GPIO_Init
-3648  0259 85            	popw	x
-3649                     ; 218 	GPIO_Init(BOT_2_PORT, BOT_2_PIN, GPIO_MODE_IN_PU_NO_IT);
-3651  025a 4b40          	push	#64
-3652  025c 4b80          	push	#128
-3653  025e ae500a        	ldw	x,#20490
-3654  0261 cd0000        	call	_GPIO_Init
-3656  0264 85            	popw	x
-3657                     ; 220 	GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-3659  0265 4be0          	push	#224
-3660  0267 4b01          	push	#1
-3661  0269 ae500f        	ldw	x,#20495
-3662  026c cd0000        	call	_GPIO_Init
-3664  026f 85            	popw	x
-3665                     ; 221 }
-3668  0270 81            	ret
-3701                     ; 224 void InitCLOCK(void)
-3701                     ; 225 {
-3702                     	switch	.text
-3703  0271               _InitCLOCK:
-3707                     ; 226 	CLK_DeInit();
-3709  0271 cd0000        	call	_CLK_DeInit
-3711                     ; 227 	CLK_HSECmd(DISABLE);
-3713  0274 4f            	clr	a
-3714  0275 cd0000        	call	_CLK_HSECmd
-3716                     ; 228 	CLK_LSICmd(DISABLE);
-3718  0278 4f            	clr	a
-3719  0279 cd0000        	call	_CLK_LSICmd
-3721                     ; 229 	CLK_HSICmd(ENABLE);
-3723  027c a601          	ld	a,#1
-3724  027e cd0000        	call	_CLK_HSICmd
-3727  0281               L7222:
-3728                     ; 231 	while (CLK_GetFlagStatus(CLK_FLAG_HSIRDY) == FALSE);
-3730  0281 ae0102        	ldw	x,#258
-3731  0284 cd0000        	call	_CLK_GetFlagStatus
-3733  0287 4d            	tnz	a
-3734  0288 27f7          	jreq	L7222
-3735                     ; 233 	CLK_ClockSwitchCmd(ENABLE);
-3737  028a a601          	ld	a,#1
-3738  028c cd0000        	call	_CLK_ClockSwitchCmd
-3740                     ; 234 	CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
-3742  028f 4f            	clr	a
-3743  0290 cd0000        	call	_CLK_HSIPrescalerConfig
-3745                     ; 235 	CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
-3747  0293 a680          	ld	a,#128
-3748  0295 cd0000        	call	_CLK_SYSCLKConfig
-3750                     ; 236 	CLK_ClockSwitchConfig(CLK_SWITCHMODE_AUTO, CLK_SOURCE_HSI, DISABLE, CLK_CURRENTCLOCKSTATE_ENABLE);
-3752  0298 4b01          	push	#1
-3753  029a 4b00          	push	#0
-3754  029c ae01e1        	ldw	x,#481
-3755  029f cd0000        	call	_CLK_ClockSwitchConfig
-3757  02a2 85            	popw	x
-3758                     ; 238 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, DISABLE);
-3760  02a3 5f            	clrw	x
-3761  02a4 cd0000        	call	_CLK_PeripheralClockConfig
-3763                     ; 239 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_SPI, DISABLE);
-3765  02a7 ae0100        	ldw	x,#256
-3766  02aa cd0000        	call	_CLK_PeripheralClockConfig
-3768                     ; 240 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_ADC, DISABLE);
-3770  02ad ae1300        	ldw	x,#4864
-3771  02b0 cd0000        	call	_CLK_PeripheralClockConfig
-3773                     ; 241 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_AWU, DISABLE);
-3775  02b3 ae1200        	ldw	x,#4608
-3776  02b6 cd0000        	call	_CLK_PeripheralClockConfig
-3778                     ; 242 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_UART1, DISABLE);
-3780  02b9 ae0300        	ldw	x,#768
-3781  02bc cd0000        	call	_CLK_PeripheralClockConfig
-3783                     ; 243 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER1, DISABLE);
-3785  02bf ae0700        	ldw	x,#1792
-3786  02c2 cd0000        	call	_CLK_PeripheralClockConfig
-3788                     ; 244 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER4, ENABLE);
-3790  02c5 ae0401        	ldw	x,#1025
-3791  02c8 cd0000        	call	_CLK_PeripheralClockConfig
-3793                     ; 245 }
-3796  02cb 81            	ret
-3823                     ; 248 void InitTIM4(void)
-3823                     ; 249 {
+2661                     ; 55 void main(void)
+2661                     ; 56 {
+2663                     	switch	.text
+2664  0000               _main:
+2666  0000 5204          	subw	sp,#4
+2667       00000004      OFST:	set	4
+2670                     ; 57 	uint8_t last_state_btn1 = 1;
+2672  0002 a601          	ld	a,#1
+2673  0004 6b01          	ld	(OFST-3,sp),a
+2675                     ; 58 	uint8_t last_state_btn2 = 1;
+2677  0006 a601          	ld	a,#1
+2678  0008 6b02          	ld	(OFST-2,sp),a
+2680                     ; 62 	InitCLOCK();
+2682  000a cd02dd        	call	_InitCLOCK
+2684                     ; 63 	InitTIM4();
+2686  000d cd0338        	call	_InitTIM4
+2688                     ; 64 	InitGPIO();
+2690  0010 cd0279        	call	_InitGPIO
+2692  0013               L3171:
+2693                     ; 68     current_state_btn1 = ReadButton(BOT_1_PORT, BOT_1_PIN);
+2695  0013 4b40          	push	#64
+2696  0015 ae500a        	ldw	x,#20490
+2697  0018 ad6f          	call	_ReadButton
+2699  001a 5b01          	addw	sp,#1
+2700  001c 6b03          	ld	(OFST-1,sp),a
+2702                     ; 69     current_state_btn2 = ReadButton(BOT_2_PORT, BOT_2_PIN);
+2704  001e 4b80          	push	#128
+2705  0020 ae500a        	ldw	x,#20490
+2706  0023 ad64          	call	_ReadButton
+2708  0025 5b01          	addw	sp,#1
+2709  0027 6b04          	ld	(OFST+0,sp),a
+2711                     ; 72     if ((last_state_btn1 == 1) && (current_state_btn1 == 0))
+2713  0029 7b01          	ld	a,(OFST-3,sp)
+2714  002b a101          	cp	a,#1
+2715  002d 2622          	jrne	L7171
+2717  002f 0d03          	tnz	(OFST-1,sp)
+2718  0031 261e          	jrne	L7171
+2719                     ; 74         Delay_ms_Timer(50);  // Debounce
+2721  0033 ae0032        	ldw	x,#50
+2722  0036 cd034f        	call	_Delay_ms_Timer
+2724                     ; 75         if (ReadButton(BOT_1_PORT, BOT_1_PIN) == 0)  // Confirma se continua pressionado
+2726  0039 4b40          	push	#64
+2727  003b ae500a        	ldw	x,#20490
+2728  003e ad49          	call	_ReadButton
+2730  0040 5b01          	addw	sp,#1
+2731  0042 4d            	tnz	a
+2732  0043 260c          	jrne	L7171
+2733                     ; 77             Contagem_14s();
+2735  0045 cd0157        	call	_Contagem_14s
+2737                     ; 78             BUZZER(1, 500);
+2739  0048 ae01f4        	ldw	x,#500
+2740  004b 89            	pushw	x
+2741  004c a601          	ld	a,#1
+2742  004e ad4c          	call	_BUZZER
+2744  0050 85            	popw	x
+2745  0051               L7171:
+2746                     ; 83     if ((last_state_btn2 == 1) && (current_state_btn2 == 0))
+2748  0051 7b02          	ld	a,(OFST-2,sp)
+2749  0053 a101          	cp	a,#1
+2750  0055 2622          	jrne	L3271
+2752  0057 0d04          	tnz	(OFST+0,sp)
+2753  0059 261e          	jrne	L3271
+2754                     ; 85         Delay_ms_Timer(50);  // Debounce
+2756  005b ae0032        	ldw	x,#50
+2757  005e cd034f        	call	_Delay_ms_Timer
+2759                     ; 86         if (ReadButton(BOT_2_PORT, BOT_2_PIN) == 0)  // Confirma se continua pressionado
+2761  0061 4b80          	push	#128
+2762  0063 ae500a        	ldw	x,#20490
+2763  0066 ad21          	call	_ReadButton
+2765  0068 5b01          	addw	sp,#1
+2766  006a 4d            	tnz	a
+2767  006b 260c          	jrne	L3271
+2768                     ; 88             Contagem_24s();
+2770  006d cd01a3        	call	_Contagem_24s
+2772                     ; 89             BUZZER(1, 500);
+2774  0070 ae01f4        	ldw	x,#500
+2775  0073 89            	pushw	x
+2776  0074 a601          	ld	a,#1
+2777  0076 ad24          	call	_BUZZER
+2779  0078 85            	popw	x
+2780  0079               L3271:
+2781                     ; 93     last_state_btn1 = current_state_btn1;
+2783  0079 7b03          	ld	a,(OFST-1,sp)
+2784  007b 6b01          	ld	(OFST-3,sp),a
+2786                     ; 94     last_state_btn2 = current_state_btn2;
+2788  007d 7b04          	ld	a,(OFST+0,sp)
+2789  007f 6b02          	ld	(OFST-2,sp),a
+2791                     ; 96     Delay_ms_Timer(20);  // Pequeno delay no loop principal
+2793  0081 ae0014        	ldw	x,#20
+2794  0084 cd034f        	call	_Delay_ms_Timer
+2797  0087 208a          	jra	L3171
+2896                     ; 102 uint8_t ReadButton(GPIO_TypeDef* PORT, uint8_t PIN)
+2896                     ; 103 {
+2897                     	switch	.text
+2898  0089               _ReadButton:
+2900  0089 89            	pushw	x
+2901       00000000      OFST:	set	0
+2904                     ; 104 	return (GPIO_ReadInputPin(PORT, PIN) == RESET) ? 0 : 1;
+2906  008a 7b05          	ld	a,(OFST+5,sp)
+2907  008c 88            	push	a
+2908  008d cd0000        	call	_GPIO_ReadInputPin
+2910  0090 5b01          	addw	sp,#1
+2911  0092 4d            	tnz	a
+2912  0093 2603          	jrne	L01
+2913  0095 4f            	clr	a
+2914  0096 2002          	jra	L21
+2915  0098               L01:
+2916  0098 a601          	ld	a,#1
+2917  009a               L21:
+2920  009a 85            	popw	x
+2921  009b 81            	ret
+2977                     ; 108 void BUZZER (uint8_t num_acm, uint16_t temp_acm)
+2977                     ; 109 {
+2978                     	switch	.text
+2979  009c               _BUZZER:
+2981  009c 88            	push	a
+2982  009d 88            	push	a
+2983       00000001      OFST:	set	1
+2986                     ; 111 	for(i = 0; i < num_acm; i++)
+2988  009e 0f01          	clr	(OFST+0,sp)
+2991  00a0 2027          	jra	L5302
+2992  00a2               L1302:
+2993                     ; 113 		GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
+2995  00a2 4b01          	push	#1
+2996  00a4 ae500f        	ldw	x,#20495
+2997  00a7 cd0000        	call	_GPIO_WriteHigh
+2999  00aa 84            	pop	a
+3000                     ; 114 		LED(4, 500);
+3002  00ab ae01f4        	ldw	x,#500
+3003  00ae 89            	pushw	x
+3004  00af a604          	ld	a,#4
+3005  00b1 ad1e          	call	_LED
+3007  00b3 85            	popw	x
+3008                     ; 115 		Delay_ms_Timer(temp_acm);
+3010  00b4 1e05          	ldw	x,(OFST+4,sp)
+3011  00b6 cd034f        	call	_Delay_ms_Timer
+3013                     ; 117 		GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+3015  00b9 4b01          	push	#1
+3016  00bb ae500f        	ldw	x,#20495
+3017  00be cd0000        	call	_GPIO_WriteLow
+3019  00c1 84            	pop	a
+3020                     ; 118 		Delay_ms_Timer(temp_acm);
+3022  00c2 1e05          	ldw	x,(OFST+4,sp)
+3023  00c4 cd034f        	call	_Delay_ms_Timer
+3025                     ; 111 	for(i = 0; i < num_acm; i++)
+3027  00c7 0c01          	inc	(OFST+0,sp)
+3029  00c9               L5302:
+3032  00c9 7b01          	ld	a,(OFST+0,sp)
+3033  00cb 1102          	cp	a,(OFST+1,sp)
+3034  00cd 25d3          	jrult	L1302
+3035                     ; 120 }
+3038  00cf 85            	popw	x
+3039  00d0 81            	ret
+3095                     ; 123 void LED (uint8_t num_acm, uint16_t temp_acm)
+3095                     ; 124 {
+3096                     	switch	.text
+3097  00d1               _LED:
+3099  00d1 88            	push	a
+3100  00d2 88            	push	a
+3101       00000001      OFST:	set	1
+3104                     ; 126 	for(i = 0; i < num_acm; i++)
+3106  00d3 0f01          	clr	(OFST+0,sp)
+3109  00d5 2078          	jra	L3702
+3110  00d7               L7602:
+3111                     ; 129 		GPIO_WriteHigh(LD_A_PORT, LD_A_PIN);
+3113  00d7 4b01          	push	#1
+3114  00d9 ae5005        	ldw	x,#20485
+3115  00dc cd0000        	call	_GPIO_WriteHigh
+3117  00df 84            	pop	a
+3118                     ; 130 		GPIO_WriteHigh(LD_B_PORT, LD_B_PIN);
+3120  00e0 4b02          	push	#2
+3121  00e2 ae5005        	ldw	x,#20485
+3122  00e5 cd0000        	call	_GPIO_WriteHigh
+3124  00e8 84            	pop	a
+3125                     ; 131 		GPIO_WriteHigh(LD_C_PORT, LD_C_PIN);
+3127  00e9 4b04          	push	#4
+3128  00eb ae5005        	ldw	x,#20485
+3129  00ee cd0000        	call	_GPIO_WriteHigh
+3131  00f1 84            	pop	a
+3132                     ; 132 		GPIO_WriteHigh(LD_D_PORT, LD_D_PIN);
+3134  00f2 4b08          	push	#8
+3135  00f4 ae5005        	ldw	x,#20485
+3136  00f7 cd0000        	call	_GPIO_WriteHigh
+3138  00fa 84            	pop	a
+3139                     ; 133 		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
+3141  00fb 4b04          	push	#4
+3142  00fd ae500a        	ldw	x,#20490
+3143  0100 cd0260        	call	_pulseLatch
+3145  0103 84            	pop	a
+3146                     ; 134 		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+3148  0104 4b02          	push	#2
+3149  0106 ae500a        	ldw	x,#20490
+3150  0109 cd0260        	call	_pulseLatch
+3152  010c 84            	pop	a
+3153                     ; 136 		Delay_ms_Timer(temp_acm);
+3155  010d 1e05          	ldw	x,(OFST+4,sp)
+3156  010f cd034f        	call	_Delay_ms_Timer
+3158                     ; 138 		GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
+3160  0112 4b01          	push	#1
+3161  0114 ae5005        	ldw	x,#20485
+3162  0117 cd0000        	call	_GPIO_WriteLow
+3164  011a 84            	pop	a
+3165                     ; 139 		GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
+3167  011b 4b02          	push	#2
+3168  011d ae5005        	ldw	x,#20485
+3169  0120 cd0000        	call	_GPIO_WriteLow
+3171  0123 84            	pop	a
+3172                     ; 140 		GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
+3174  0124 4b04          	push	#4
+3175  0126 ae5005        	ldw	x,#20485
+3176  0129 cd0000        	call	_GPIO_WriteLow
+3178  012c 84            	pop	a
+3179                     ; 141 		GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
+3181  012d 4b08          	push	#8
+3182  012f ae5005        	ldw	x,#20485
+3183  0132 cd0000        	call	_GPIO_WriteLow
+3185  0135 84            	pop	a
+3186                     ; 142 		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
+3188  0136 4b04          	push	#4
+3189  0138 ae500a        	ldw	x,#20490
+3190  013b cd0260        	call	_pulseLatch
+3192  013e 84            	pop	a
+3193                     ; 143 		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+3195  013f 4b02          	push	#2
+3196  0141 ae500a        	ldw	x,#20490
+3197  0144 cd0260        	call	_pulseLatch
+3199  0147 84            	pop	a
+3200                     ; 145 		Delay_ms_Timer(temp_acm);
+3202  0148 1e05          	ldw	x,(OFST+4,sp)
+3203  014a cd034f        	call	_Delay_ms_Timer
+3205                     ; 126 	for(i = 0; i < num_acm; i++)
+3207  014d 0c01          	inc	(OFST+0,sp)
+3209  014f               L3702:
+3212  014f 7b01          	ld	a,(OFST+0,sp)
+3213  0151 1102          	cp	a,(OFST+1,sp)
+3214  0153 2582          	jrult	L7602
+3215                     ; 147 }
+3218  0155 85            	popw	x
+3219  0156 81            	ret
+3274                     ; 150 void Contagem_14s(void)
+3274                     ; 151 {
+3275                     	switch	.text
+3276  0157               _Contagem_14s:
+3278  0157 5204          	subw	sp,#4
+3279       00000004      OFST:	set	4
+3282                     ; 156 	for(i = 14; i >= 0; i--)
+3284  0159 ae000e        	ldw	x,#14
+3285  015c 1f03          	ldw	(OFST-1,sp),x
+3287  015e               L5212:
+3288                     ; 158 		unidades = i % 10;
+3290  015e 1e03          	ldw	x,(OFST-1,sp)
+3291  0160 a60a          	ld	a,#10
+3292  0162 cd0000        	call	c_smodx
+3294  0165 01            	rrwa	x,a
+3295  0166 6b01          	ld	(OFST-3,sp),a
+3296  0168 02            	rlwa	x,a
+3298                     ; 159 		dezenas = i / 10;
+3300  0169 1e03          	ldw	x,(OFST-1,sp)
+3301  016b a60a          	ld	a,#10
+3302  016d cd0000        	call	c_sdivx
+3304  0170 01            	rrwa	x,a
+3305  0171 6b02          	ld	(OFST-2,sp),a
+3306  0173 02            	rlwa	x,a
+3308                     ; 161 		writeBCD(unidades);
+3310  0174 7b01          	ld	a,(OFST-3,sp)
+3311  0176 ad77          	call	_writeBCD
+3313                     ; 162 		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
+3315  0178 4b04          	push	#4
+3316  017a ae500a        	ldw	x,#20490
+3317  017d cd0260        	call	_pulseLatch
+3319  0180 84            	pop	a
+3320                     ; 164 		writeBCD(dezenas);
+3322  0181 7b02          	ld	a,(OFST-2,sp)
+3323  0183 ad6a          	call	_writeBCD
+3325                     ; 165 		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+3327  0185 4b02          	push	#2
+3328  0187 ae500a        	ldw	x,#20490
+3329  018a cd0260        	call	_pulseLatch
+3331  018d 84            	pop	a
+3332                     ; 167 		Delay_ms_Timer(1000);
+3334  018e ae03e8        	ldw	x,#1000
+3335  0191 cd034f        	call	_Delay_ms_Timer
+3337                     ; 156 	for(i = 14; i >= 0; i--)
+3339  0194 1e03          	ldw	x,(OFST-1,sp)
+3340  0196 1d0001        	subw	x,#1
+3341  0199 1f03          	ldw	(OFST-1,sp),x
+3345  019b 9c            	rvf
+3346  019c 1e03          	ldw	x,(OFST-1,sp)
+3347  019e 2ebe          	jrsge	L5212
+3348                     ; 169 }
+3351  01a0 5b04          	addw	sp,#4
+3352  01a2 81            	ret
+3407                     ; 172 void Contagem_24s(void)
+3407                     ; 173 {
+3408                     	switch	.text
+3409  01a3               _Contagem_24s:
+3411  01a3 5204          	subw	sp,#4
+3412       00000004      OFST:	set	4
+3415                     ; 178 	for(i = 24; i >= 0; i--)
+3417  01a5 ae0018        	ldw	x,#24
+3418  01a8 1f03          	ldw	(OFST-1,sp),x
+3420  01aa               L1612:
+3421                     ; 180 		unidades = i % 10;
+3423  01aa 1e03          	ldw	x,(OFST-1,sp)
+3424  01ac a60a          	ld	a,#10
+3425  01ae cd0000        	call	c_smodx
+3427  01b1 01            	rrwa	x,a
+3428  01b2 6b01          	ld	(OFST-3,sp),a
+3429  01b4 02            	rlwa	x,a
+3431                     ; 181 		dezenas = i / 10;
+3433  01b5 1e03          	ldw	x,(OFST-1,sp)
+3434  01b7 a60a          	ld	a,#10
+3435  01b9 cd0000        	call	c_sdivx
+3437  01bc 01            	rrwa	x,a
+3438  01bd 6b02          	ld	(OFST-2,sp),a
+3439  01bf 02            	rlwa	x,a
+3441                     ; 183 		writeBCD(unidades);
+3443  01c0 7b01          	ld	a,(OFST-3,sp)
+3444  01c2 ad2b          	call	_writeBCD
+3446                     ; 184 		pulseLatch(LATCH_01_PORT, LATCH_01_PIN);
+3448  01c4 4b04          	push	#4
+3449  01c6 ae500a        	ldw	x,#20490
+3450  01c9 cd0260        	call	_pulseLatch
+3452  01cc 84            	pop	a
+3453                     ; 186 		writeBCD(dezenas);
+3455  01cd 7b02          	ld	a,(OFST-2,sp)
+3456  01cf ad1e          	call	_writeBCD
+3458                     ; 187 		pulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+3460  01d1 4b02          	push	#2
+3461  01d3 ae500a        	ldw	x,#20490
+3462  01d6 cd0260        	call	_pulseLatch
+3464  01d9 84            	pop	a
+3465                     ; 189 		Delay_ms_Timer(1000);
+3467  01da ae03e8        	ldw	x,#1000
+3468  01dd cd034f        	call	_Delay_ms_Timer
+3470                     ; 178 	for(i = 24; i >= 0; i--)
+3472  01e0 1e03          	ldw	x,(OFST-1,sp)
+3473  01e2 1d0001        	subw	x,#1
+3474  01e5 1f03          	ldw	(OFST-1,sp),x
+3478  01e7 9c            	rvf
+3479  01e8 1e03          	ldw	x,(OFST-1,sp)
+3480  01ea 2ebe          	jrsge	L1612
+3481                     ; 191 }
+3484  01ec 5b04          	addw	sp,#4
+3485  01ee 81            	ret
+3521                     ; 194 void writeBCD(uint8_t valor)
+3521                     ; 195 {
+3522                     	switch	.text
+3523  01ef               _writeBCD:
+3525  01ef 88            	push	a
+3526       00000000      OFST:	set	0
+3529                     ; 196 	(valor & 0x01) ? GPIO_WriteHigh(LD_A_PORT, LD_A_PIN) : GPIO_WriteLow(LD_A_PORT, LD_A_PIN);
+3531  01f0 a501          	bcp	a,#1
+3532  01f2 270c          	jreq	L62
+3533  01f4 4b01          	push	#1
+3534  01f6 ae5005        	ldw	x,#20485
+3535  01f9 cd0000        	call	_GPIO_WriteHigh
+3537  01fc 5b01          	addw	sp,#1
+3538  01fe 200a          	jra	L03
+3539  0200               L62:
+3540  0200 4b01          	push	#1
+3541  0202 ae5005        	ldw	x,#20485
+3542  0205 cd0000        	call	_GPIO_WriteLow
+3544  0208 5b01          	addw	sp,#1
+3545  020a               L03:
+3546                     ; 197 	(valor & 0x02) ? GPIO_WriteHigh(LD_B_PORT, LD_B_PIN) : GPIO_WriteLow(LD_B_PORT, LD_B_PIN);
+3548  020a 7b01          	ld	a,(OFST+1,sp)
+3549  020c a502          	bcp	a,#2
+3550  020e 270c          	jreq	L23
+3551  0210 4b02          	push	#2
+3552  0212 ae5005        	ldw	x,#20485
+3553  0215 cd0000        	call	_GPIO_WriteHigh
+3555  0218 5b01          	addw	sp,#1
+3556  021a 200a          	jra	L43
+3557  021c               L23:
+3558  021c 4b02          	push	#2
+3559  021e ae5005        	ldw	x,#20485
+3560  0221 cd0000        	call	_GPIO_WriteLow
+3562  0224 5b01          	addw	sp,#1
+3563  0226               L43:
+3564                     ; 198 	(valor & 0x04) ? GPIO_WriteHigh(LD_C_PORT, LD_C_PIN) : GPIO_WriteLow(LD_C_PORT, LD_C_PIN);
+3566  0226 7b01          	ld	a,(OFST+1,sp)
+3567  0228 a504          	bcp	a,#4
+3568  022a 270c          	jreq	L63
+3569  022c 4b04          	push	#4
+3570  022e ae5005        	ldw	x,#20485
+3571  0231 cd0000        	call	_GPIO_WriteHigh
+3573  0234 5b01          	addw	sp,#1
+3574  0236 200a          	jra	L04
+3575  0238               L63:
+3576  0238 4b04          	push	#4
+3577  023a ae5005        	ldw	x,#20485
+3578  023d cd0000        	call	_GPIO_WriteLow
+3580  0240 5b01          	addw	sp,#1
+3581  0242               L04:
+3582                     ; 199 	(valor & 0x08) ? GPIO_WriteHigh(LD_D_PORT, LD_D_PIN) : GPIO_WriteLow(LD_D_PORT, LD_D_PIN);
+3584  0242 7b01          	ld	a,(OFST+1,sp)
+3585  0244 a508          	bcp	a,#8
+3586  0246 270c          	jreq	L24
+3587  0248 4b08          	push	#8
+3588  024a ae5005        	ldw	x,#20485
+3589  024d cd0000        	call	_GPIO_WriteHigh
+3591  0250 5b01          	addw	sp,#1
+3592  0252 200a          	jra	L44
+3593  0254               L24:
+3594  0254 4b08          	push	#8
+3595  0256 ae5005        	ldw	x,#20485
+3596  0259 cd0000        	call	_GPIO_WriteLow
+3598  025c 5b01          	addw	sp,#1
+3599  025e               L44:
+3600                     ; 200 }
+3603  025e 84            	pop	a
+3604  025f 81            	ret
+3653                     ; 203 void pulseLatch(GPIO_TypeDef* PORT, uint8_t PIN)
+3653                     ; 204 {
+3654                     	switch	.text
+3655  0260               _pulseLatch:
+3657  0260 89            	pushw	x
+3658       00000000      OFST:	set	0
+3661                     ; 205 	GPIO_WriteHigh(PORT, PIN);
+3663  0261 7b05          	ld	a,(OFST+5,sp)
+3664  0263 88            	push	a
+3665  0264 cd0000        	call	_GPIO_WriteHigh
+3667  0267 84            	pop	a
+3668                     ; 206 	Delay_ms_Timer(1);
+3670  0268 ae0001        	ldw	x,#1
+3671  026b cd034f        	call	_Delay_ms_Timer
+3673                     ; 207 	GPIO_WriteLow(PORT, PIN);
+3675  026e 7b05          	ld	a,(OFST+5,sp)
+3676  0270 88            	push	a
+3677  0271 1e02          	ldw	x,(OFST+2,sp)
+3678  0273 cd0000        	call	_GPIO_WriteLow
+3680  0276 84            	pop	a
+3681                     ; 208 }
+3684  0277 85            	popw	x
+3685  0278 81            	ret
+3709                     ; 211 void InitGPIO(void)
+3709                     ; 212 {
+3710                     	switch	.text
+3711  0279               _InitGPIO:
+3715                     ; 213 	GPIO_Init(LD_A_PORT, LD_A_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+3717  0279 4be0          	push	#224
+3718  027b 4b01          	push	#1
+3719  027d ae5005        	ldw	x,#20485
+3720  0280 cd0000        	call	_GPIO_Init
+3722  0283 85            	popw	x
+3723                     ; 214 	GPIO_Init(LD_B_PORT, LD_B_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+3725  0284 4be0          	push	#224
+3726  0286 4b02          	push	#2
+3727  0288 ae5005        	ldw	x,#20485
+3728  028b cd0000        	call	_GPIO_Init
+3730  028e 85            	popw	x
+3731                     ; 215 	GPIO_Init(LD_C_PORT, LD_C_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+3733  028f 4be0          	push	#224
+3734  0291 4b04          	push	#4
+3735  0293 ae5005        	ldw	x,#20485
+3736  0296 cd0000        	call	_GPIO_Init
+3738  0299 85            	popw	x
+3739                     ; 216 	GPIO_Init(LD_D_PORT, LD_D_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+3741  029a 4be0          	push	#224
+3742  029c 4b08          	push	#8
+3743  029e ae5005        	ldw	x,#20485
+3744  02a1 cd0000        	call	_GPIO_Init
+3746  02a4 85            	popw	x
+3747                     ; 218 	GPIO_Init(LATCH_01_PORT, LATCH_01_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+3749  02a5 4be0          	push	#224
+3750  02a7 4b04          	push	#4
+3751  02a9 ae500a        	ldw	x,#20490
+3752  02ac cd0000        	call	_GPIO_Init
+3754  02af 85            	popw	x
+3755                     ; 219 	GPIO_Init(LATCH_02_PORT, LATCH_02_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+3757  02b0 4be0          	push	#224
+3758  02b2 4b02          	push	#2
+3759  02b4 ae500a        	ldw	x,#20490
+3760  02b7 cd0000        	call	_GPIO_Init
+3762  02ba 85            	popw	x
+3763                     ; 221 	GPIO_Init(BOT_1_PORT, BOT_1_PIN, GPIO_MODE_IN_PU_NO_IT);
+3765  02bb 4b40          	push	#64
+3766  02bd 4b40          	push	#64
+3767  02bf ae500a        	ldw	x,#20490
+3768  02c2 cd0000        	call	_GPIO_Init
+3770  02c5 85            	popw	x
+3771                     ; 222 	GPIO_Init(BOT_2_PORT, BOT_2_PIN, GPIO_MODE_IN_PU_NO_IT);
+3773  02c6 4b40          	push	#64
+3774  02c8 4b80          	push	#128
+3775  02ca ae500a        	ldw	x,#20490
+3776  02cd cd0000        	call	_GPIO_Init
+3778  02d0 85            	popw	x
+3779                     ; 224 	GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+3781  02d1 4be0          	push	#224
+3782  02d3 4b01          	push	#1
+3783  02d5 ae500f        	ldw	x,#20495
+3784  02d8 cd0000        	call	_GPIO_Init
+3786  02db 85            	popw	x
+3787                     ; 225 }
+3790  02dc 81            	ret
+3823                     ; 228 void InitCLOCK(void)
+3823                     ; 229 {
 3824                     	switch	.text
-3825  02cc               _InitTIM4:
-3829                     ; 250 	TIM4_PrescalerConfig(TIM4_PRESCALER_128, TIM4_PSCRELOADMODE_IMMEDIATE);
-3831  02cc ae0701        	ldw	x,#1793
-3832  02cf cd0000        	call	_TIM4_PrescalerConfig
-3834                     ; 251 	TIM4_SetAutoreload(125);
-3836  02d2 a67d          	ld	a,#125
-3837  02d4 cd0000        	call	_TIM4_SetAutoreload
-3839                     ; 252 	TIM4_ITConfig(TIM4_IT_UPDATE, DISABLE);
-3841  02d7 ae0100        	ldw	x,#256
-3842  02da cd0000        	call	_TIM4_ITConfig
-3844                     ; 253 	TIM4_Cmd(ENABLE);
-3846  02dd a601          	ld	a,#1
-3847  02df cd0000        	call	_TIM4_Cmd
-3849                     ; 254 }
-3852  02e2 81            	ret
-3889                     ; 257 void Delay_ms_Timer(uint16_t ms)
-3889                     ; 258 {
-3890                     	switch	.text
-3891  02e3               _Delay_ms_Timer:
-3893  02e3 89            	pushw	x
-3894       00000000      OFST:	set	0
-3897  02e4 2011          	jra	L3622
-3898  02e6               L1622:
-3899                     ; 261 		TIM4_SetCounter(0);
-3901  02e6 4f            	clr	a
-3902  02e7 cd0000        	call	_TIM4_SetCounter
-3904                     ; 262 		TIM4_ClearFlag(TIM4_FLAG_UPDATE);
-3906  02ea a601          	ld	a,#1
-3907  02ec cd0000        	call	_TIM4_ClearFlag
-3910  02ef               L1722:
-3911                     ; 263 		while(TIM4_GetFlagStatus(TIM4_FLAG_UPDATE) == RESET);
-3913  02ef a601          	ld	a,#1
-3914  02f1 cd0000        	call	_TIM4_GetFlagStatus
-3916  02f4 4d            	tnz	a
-3917  02f5 27f8          	jreq	L1722
-3918  02f7               L3622:
-3919                     ; 259 	while(ms--)
-3921  02f7 1e01          	ldw	x,(OFST+1,sp)
-3922  02f9 1d0001        	subw	x,#1
-3923  02fc 1f01          	ldw	(OFST+1,sp),x
-3924  02fe 1c0001        	addw	x,#1
-3925  0301 a30000        	cpw	x,#0
-3926  0304 26e0          	jrne	L1622
-3927                     ; 265 }
-3930  0306 85            	popw	x
-3931  0307 81            	ret
-3944                     	xdef	_main
-3945                     	xdef	_LED_BUZZER
-3946                     	xdef	_ReadButton_02
-3947                     	xdef	_ReadButton_01
-3948                     	xdef	_Contagem_24s
-3949                     	xdef	_Contagem_14s
-3950                     	xdef	_pulseLatch
-3951                     	xdef	_writeBCD
-3952                     	xdef	_Delay_ms_Timer
-3953                     	xdef	_InitTIM4
-3954                     	xdef	_InitGPIO
-3955                     	xdef	_InitCLOCK
-3956                     	xref	_TIM4_ClearFlag
-3957                     	xref	_TIM4_GetFlagStatus
-3958                     	xref	_TIM4_SetAutoreload
-3959                     	xref	_TIM4_SetCounter
-3960                     	xref	_TIM4_PrescalerConfig
-3961                     	xref	_TIM4_ITConfig
-3962                     	xref	_TIM4_Cmd
-3963                     	xref	_GPIO_ReadInputPin
-3964                     	xref	_GPIO_WriteLow
-3965                     	xref	_GPIO_WriteHigh
-3966                     	xref	_GPIO_Init
-3967                     	xref	_CLK_GetFlagStatus
-3968                     	xref	_CLK_SYSCLKConfig
-3969                     	xref	_CLK_HSIPrescalerConfig
-3970                     	xref	_CLK_ClockSwitchConfig
-3971                     	xref	_CLK_PeripheralClockConfig
-3972                     	xref	_CLK_ClockSwitchCmd
-3973                     	xref	_CLK_LSICmd
-3974                     	xref	_CLK_HSICmd
-3975                     	xref	_CLK_HSECmd
-3976                     	xref	_CLK_DeInit
-3977                     	xref.b	c_x
-3996                     	xref	c_sdivx
-3997                     	xref	c_smodx
-3998                     	end
+3825  02dd               _InitCLOCK:
+3829                     ; 230 	CLK_DeInit();
+3831  02dd cd0000        	call	_CLK_DeInit
+3833                     ; 231 	CLK_HSECmd(DISABLE);
+3835  02e0 4f            	clr	a
+3836  02e1 cd0000        	call	_CLK_HSECmd
+3838                     ; 232 	CLK_LSICmd(DISABLE);
+3840  02e4 4f            	clr	a
+3841  02e5 cd0000        	call	_CLK_LSICmd
+3843                     ; 233 	CLK_HSICmd(ENABLE);
+3845  02e8 a601          	ld	a,#1
+3846  02ea cd0000        	call	_CLK_HSICmd
+3849  02ed               L3522:
+3850                     ; 235 	while (CLK_GetFlagStatus(CLK_FLAG_HSIRDY) == FALSE);
+3852  02ed ae0102        	ldw	x,#258
+3853  02f0 cd0000        	call	_CLK_GetFlagStatus
+3855  02f3 4d            	tnz	a
+3856  02f4 27f7          	jreq	L3522
+3857                     ; 237 	CLK_ClockSwitchCmd(ENABLE);
+3859  02f6 a601          	ld	a,#1
+3860  02f8 cd0000        	call	_CLK_ClockSwitchCmd
+3862                     ; 238 	CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
+3864  02fb 4f            	clr	a
+3865  02fc cd0000        	call	_CLK_HSIPrescalerConfig
+3867                     ; 239 	CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
+3869  02ff a680          	ld	a,#128
+3870  0301 cd0000        	call	_CLK_SYSCLKConfig
+3872                     ; 240 	CLK_ClockSwitchConfig(CLK_SWITCHMODE_AUTO, CLK_SOURCE_HSI, DISABLE, CLK_CURRENTCLOCKSTATE_ENABLE);
+3874  0304 4b01          	push	#1
+3875  0306 4b00          	push	#0
+3876  0308 ae01e1        	ldw	x,#481
+3877  030b cd0000        	call	_CLK_ClockSwitchConfig
+3879  030e 85            	popw	x
+3880                     ; 242 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, DISABLE);
+3882  030f 5f            	clrw	x
+3883  0310 cd0000        	call	_CLK_PeripheralClockConfig
+3885                     ; 243 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_SPI, DISABLE);
+3887  0313 ae0100        	ldw	x,#256
+3888  0316 cd0000        	call	_CLK_PeripheralClockConfig
+3890                     ; 244 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_ADC, DISABLE);
+3892  0319 ae1300        	ldw	x,#4864
+3893  031c cd0000        	call	_CLK_PeripheralClockConfig
+3895                     ; 245 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_AWU, DISABLE);
+3897  031f ae1200        	ldw	x,#4608
+3898  0322 cd0000        	call	_CLK_PeripheralClockConfig
+3900                     ; 246 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_UART1, DISABLE);
+3902  0325 ae0300        	ldw	x,#768
+3903  0328 cd0000        	call	_CLK_PeripheralClockConfig
+3905                     ; 247 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER1, DISABLE);
+3907  032b ae0700        	ldw	x,#1792
+3908  032e cd0000        	call	_CLK_PeripheralClockConfig
+3910                     ; 248 	CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER4, ENABLE);
+3912  0331 ae0401        	ldw	x,#1025
+3913  0334 cd0000        	call	_CLK_PeripheralClockConfig
+3915                     ; 249 }
+3918  0337 81            	ret
+3945                     ; 252 void InitTIM4(void)
+3945                     ; 253 {
+3946                     	switch	.text
+3947  0338               _InitTIM4:
+3951                     ; 254 	TIM4_PrescalerConfig(TIM4_PRESCALER_128, TIM4_PSCRELOADMODE_IMMEDIATE);
+3953  0338 ae0701        	ldw	x,#1793
+3954  033b cd0000        	call	_TIM4_PrescalerConfig
+3956                     ; 255 	TIM4_SetAutoreload(125);
+3958  033e a67d          	ld	a,#125
+3959  0340 cd0000        	call	_TIM4_SetAutoreload
+3961                     ; 256 	TIM4_ITConfig(TIM4_IT_UPDATE, DISABLE);
+3963  0343 ae0100        	ldw	x,#256
+3964  0346 cd0000        	call	_TIM4_ITConfig
+3966                     ; 257 	TIM4_Cmd(ENABLE);
+3968  0349 a601          	ld	a,#1
+3969  034b cd0000        	call	_TIM4_Cmd
+3971                     ; 258 }
+3974  034e 81            	ret
+4011                     ; 261 void Delay_ms_Timer(uint16_t ms)
+4011                     ; 262 {
+4012                     	switch	.text
+4013  034f               _Delay_ms_Timer:
+4015  034f 89            	pushw	x
+4016       00000000      OFST:	set	0
+4019  0350 2011          	jra	L7032
+4020  0352               L5032:
+4021                     ; 265 		TIM4_SetCounter(0);
+4023  0352 4f            	clr	a
+4024  0353 cd0000        	call	_TIM4_SetCounter
+4026                     ; 266 		TIM4_ClearFlag(TIM4_FLAG_UPDATE);
+4028  0356 a601          	ld	a,#1
+4029  0358 cd0000        	call	_TIM4_ClearFlag
+4032  035b               L5132:
+4033                     ; 267 		while(TIM4_GetFlagStatus(TIM4_FLAG_UPDATE) == RESET);
+4035  035b a601          	ld	a,#1
+4036  035d cd0000        	call	_TIM4_GetFlagStatus
+4038  0360 4d            	tnz	a
+4039  0361 27f8          	jreq	L5132
+4040  0363               L7032:
+4041                     ; 263 	while(ms--)
+4043  0363 1e01          	ldw	x,(OFST+1,sp)
+4044  0365 1d0001        	subw	x,#1
+4045  0368 1f01          	ldw	(OFST+1,sp),x
+4046  036a 1c0001        	addw	x,#1
+4047  036d a30000        	cpw	x,#0
+4048  0370 26e0          	jrne	L5032
+4049                     ; 269 }
+4052  0372 85            	popw	x
+4053  0373 81            	ret
+4066                     	xdef	_main
+4067                     	xdef	_LED
+4068                     	xdef	_BUZZER
+4069                     	xdef	_ReadButton
+4070                     	xdef	_Contagem_24s
+4071                     	xdef	_Contagem_14s
+4072                     	xdef	_pulseLatch
+4073                     	xdef	_writeBCD
+4074                     	xdef	_Delay_ms_Timer
+4075                     	xdef	_InitTIM4
+4076                     	xdef	_InitGPIO
+4077                     	xdef	_InitCLOCK
+4078                     	xref	_TIM4_ClearFlag
+4079                     	xref	_TIM4_GetFlagStatus
+4080                     	xref	_TIM4_SetAutoreload
+4081                     	xref	_TIM4_SetCounter
+4082                     	xref	_TIM4_PrescalerConfig
+4083                     	xref	_TIM4_ITConfig
+4084                     	xref	_TIM4_Cmd
+4085                     	xref	_GPIO_ReadInputPin
+4086                     	xref	_GPIO_WriteLow
+4087                     	xref	_GPIO_WriteHigh
+4088                     	xref	_GPIO_Init
+4089                     	xref	_CLK_GetFlagStatus
+4090                     	xref	_CLK_SYSCLKConfig
+4091                     	xref	_CLK_HSIPrescalerConfig
+4092                     	xref	_CLK_ClockSwitchConfig
+4093                     	xref	_CLK_PeripheralClockConfig
+4094                     	xref	_CLK_ClockSwitchCmd
+4095                     	xref	_CLK_LSICmd
+4096                     	xref	_CLK_HSICmd
+4097                     	xref	_CLK_HSECmd
+4098                     	xref	_CLK_DeInit
+4099                     	xref.b	c_x
+4118                     	xref	c_sdivx
+4119                     	xref	c_smodx
+4120                     	end
