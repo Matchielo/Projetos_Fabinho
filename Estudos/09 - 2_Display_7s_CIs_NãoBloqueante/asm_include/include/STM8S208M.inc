@@ -1,0 +1,572 @@
+; STM8S208M.inc
+
+; Copyright (c) 2003-2017 STMicroelectronics
+
+	#ifdef __STM8S208M__
+; do nothing
+	#else
+	#define __STM8S208M__ 1
+
+; STM8S208M
+
+
+; Port A
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PA_ODR.w		; Port A data output latch register
+
+	EXTERN PA_IDR.w		; Port A input pin value register
+
+	EXTERN PA_DDR.w		; Port A data direction register
+
+	EXTERN PA_CR1.w		; Port A control register 1
+
+	EXTERN PA_CR2.w		; Port A control register 2
+
+; Port B
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PB_ODR.w		; Port B data output latch register
+
+	EXTERN PB_IDR.w		; Port B input pin value register
+
+	EXTERN PB_DDR.w		; Port B data direction register
+
+	EXTERN PB_CR1.w		; Port B control register 1
+
+	EXTERN PB_CR2.w		; Port B control register 2
+
+; Port C
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PC_ODR.w		; Port C data output latch register
+
+	EXTERN PC_IDR.w		; Port C input pin value register
+
+	EXTERN PC_DDR.w		; Port C data direction register
+
+	EXTERN PC_CR1.w		; Port C control register 1
+
+	EXTERN PC_CR2.w		; Port C control register 2
+
+; Port D
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PD_ODR.w		; Port D data output latch register
+
+	EXTERN PD_IDR.w		; Port D input pin value register
+
+	EXTERN PD_DDR.w		; Port D data direction register
+
+	EXTERN PD_CR1.w		; Port D control register 1
+
+	EXTERN PD_CR2.w		; Port D control register 2
+
+; Port E
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PE_ODR.w		; Port E data output latch register
+
+	EXTERN PE_IDR.w		; Port E input pin value register
+
+	EXTERN PE_DDR.w		; Port E data direction register
+
+	EXTERN PE_CR1.w		; Port E control register 1
+
+	EXTERN PE_CR2.w		; Port E control register 2
+
+; Port F
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PF_ODR.w		; Port F data output latch register
+
+	EXTERN PF_IDR.w		; Port F input pin value register
+
+	EXTERN PF_DDR.w		; Port F data direction register
+
+	EXTERN PF_CR1.w		; Port F control register 1
+
+	EXTERN PF_CR2.w		; Port F control register 2
+
+; Port G
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PG_ODR.w		; Port G data output latch register
+
+	EXTERN PG_IDR.w		; Port G input pin value register
+
+	EXTERN PG_DDR.w		; Port G data direction register
+
+	EXTERN PG_CR1.w		; Port G control register 1
+
+	EXTERN PG_CR2.w		; Port G control register 2
+
+; Port H
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PH_ODR.w		; Port H data output latch register
+
+	EXTERN PH_IDR.w		; Port H input pin value register
+
+	EXTERN PH_DDR.w		; Port H data direction register
+
+	EXTERN PH_CR1.w		; Port H control register 1
+
+	EXTERN PH_CR2.w		; Port H control register 2
+
+; Port I
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN PI_ODR.w		; Port I data output latch register
+
+	EXTERN PI_IDR.w		; Port I input pin value register
+
+	EXTERN PI_DDR.w		; Port I data direction register
+
+	EXTERN PI_CR1.w		; Port I control register 1
+
+	EXTERN PI_CR2.w		; Port I control register 2
+
+; Flash
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN FLASH_CR1.w		; Flash control register 1
+
+	EXTERN FLASH_CR2.w		; Flash control register 2
+
+	EXTERN FLASH_NCR2.w		; Flash complementary control register 2
+
+	EXTERN FLASH_FPR.w		; Flash protection register
+
+	EXTERN FLASH_NFPR.w		; Flash complementary protection register
+
+	EXTERN FLASH_IAPSR.w		; Flash in-application programming status register
+
+	EXTERN FLASH_PUKR.w		; Flash Program memory unprotection register
+
+	EXTERN FLASH_DUKR.w		; Data EEPROM unprotection register
+
+; External Interrupt Control Register (ITC)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN EXTI_CR1.w		; External interrupt control register 1
+
+	EXTERN EXTI_CR2.w		; External interrupt control register 2
+
+; Reset (RST)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN RST_SR.w		; Reset status register 1
+
+; Clock Control (CLK)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN CLK_ICKR.w		; Internal clock control register
+
+	EXTERN CLK_ECKR.w		; External clock control register
+
+	EXTERN CLK_CMSR.w		; Clock master status register
+
+	EXTERN CLK_SWR.w		; Clock master switch register
+
+	EXTERN CLK_SWCR.w		; Clock switch control register
+
+	EXTERN CLK_CKDIVR.w		; Clock divider register
+
+	EXTERN CLK_PCKENR1.w		; Peripheral clock gating register 1
+
+	EXTERN CLK_CSSR.w		; Clock security system register
+
+	EXTERN CLK_CCOR.w		; Configurable clock control register
+
+	EXTERN CLK_PCKENR2.w		; Peripheral clock gating register 2
+
+	EXTERN CLK_CANCCR.w		; CAN clock control register
+
+	EXTERN CLK_HSITRIMR.w		; HSI clock calibration trimming register
+
+	EXTERN CLK_SWIMCCR.w		; SWIM clock control register
+
+; Window Watchdog (WWDG)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN WWDG_CR.w		; WWDG Control Register
+
+	EXTERN WWDG_WR.w		; WWDR Window Register
+
+; Independent Watchdog (IWDG)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN IWDG_KR.w		; IWDG Key Register
+
+	EXTERN IWDG_PR.w		; IWDG Prescaler Register
+
+	EXTERN IWDG_RLR.w		; IWDG Reload Register
+
+; Auto Wake-Up (AWU)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN AWU_CSR.w		; AWU Control/Status Register
+
+	EXTERN AWU_APR.w		; AWU asynchronous prescaler buffer register
+
+	EXTERN AWU_TBR.w		; AWU Timebase selection register
+
+; Beeper (BEEP)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN BEEP_CSR.w		; BEEP Control/Status Register
+
+; Serial Peripheral Interface (SPI)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN SPI_CR1.w		; SPI Control Register 1
+
+	EXTERN SPI_CR2.w		; SPI Control Register 2
+
+	EXTERN SPI_ICR.w		; SPI Interrupt Control Register
+
+	EXTERN SPI_SR.w		; SPI Status Register
+
+	EXTERN SPI_DR.w		; SPI Data Register
+
+	EXTERN SPI_CRCPR.w		; SPI CRC Polynomial Register
+
+	EXTERN SPI_RXCRCR.w		; SPI Rx CRC Register
+
+	EXTERN SPI_TXCRCR.w		; SPI Tx CRC Register
+
+; I2C Bus Interface (I2C)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN I2C_CR1.w		; I2C control register 1
+
+	EXTERN I2C_CR2.w		; I2C control register 2
+
+	EXTERN I2C_FREQR.w		; I2C frequency register
+
+	EXTERN I2C_OARL.w		; I2C Own address register low
+
+	EXTERN I2C_OARH.w		; I2C Own address register high
+
+	EXTERN I2C_DR.w		; I2C data register
+
+	EXTERN I2C_SR1.w		; I2C status register 1
+
+	EXTERN I2C_SR2.w		; I2C status register 2
+
+	EXTERN I2C_SR3.w		; I2C status register 3
+
+	EXTERN I2C_ITR.w		; I2C interrupt control register
+
+	EXTERN I2C_CCRL.w		; I2C Clock control register low
+
+	EXTERN I2C_CCRH.w		; I2C Clock control register high
+
+	EXTERN I2C_TRISER.w		; I2C TRISE register
+
+	EXTERN I2C_PECR.w		; I2C packet error checking register
+
+; Universal synch/asynch receiver transmitter (UART1)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN UART1_SR.w		; UART1 Status Register
+
+	EXTERN UART1_DR.w		; UART1 Data Register
+
+	EXTERN UART1_BRR1.w		; UART1 Baud Rate Register 1
+
+	EXTERN UART1_BRR2.w		; UART1 Baud Rate Register 2
+
+	EXTERN UART1_CR1.w		; UART1 Control Register 1
+
+	EXTERN UART1_CR2.w		; UART1 Control Register 2
+
+	EXTERN UART1_CR3.w		; UART1 Control Register 3
+
+	EXTERN UART1_CR4.w		; UART1 Control Register 4
+
+	EXTERN UART1_CR5.w		; UART1 Control Register 5
+
+	EXTERN UART1_GTR.w		; UART1 Guard time Register
+
+	EXTERN UART1_PSCR.w		; UART1 Prescaler Register
+
+; LIN Universal asynch. receiver transmitter (UART3)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN UART3_SR.w		; UART3 Status Register
+
+	EXTERN UART3_DR.w		; UART3 Data Register
+
+	EXTERN UART3_BRR1.w		; UART3 Baud Rate Register 1
+
+	EXTERN UART3_BRR2.w		; UART3 Baud Rate Register 2
+
+	EXTERN UART3_CR1.w		; UART3 Control Register 1
+
+	EXTERN UART3_CR2.w		; UART3 Control Register 2
+
+	EXTERN UART3_CR3.w		; UART3 Control Register 3
+
+	EXTERN UART3_CR4.w		; UART3 Control Register 4
+
+	EXTERN UART3_CR6.w		; UART3 Control Register 6
+
+; 16-Bit Timer 1 (TIM1)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN TIM1_CR1.w		; TIM1 Control register 1
+
+	EXTERN TIM1_CR2.w		; TIM1 Control register 2
+
+	EXTERN TIM1_SMCR.w		; TIM1 Slave Mode Control register
+
+	EXTERN TIM1_ETR.w		; TIM1 external trigger register
+
+	EXTERN TIM1_IER.w		; TIM1 Interrupt enable register
+
+	EXTERN TIM1_SR1.w		; TIM1 Status register 1
+
+	EXTERN TIM1_SR2.w		; TIM1 Status register 2
+
+	EXTERN TIM1_EGR.w		; TIM1 Event Generation register
+
+	EXTERN TIM1_CCMR1.w		; TIM1 Capture/Compare mode register 1
+
+	EXTERN TIM1_CCMR2.w		; TIM1 Capture/Compare mode register 2
+
+	EXTERN TIM1_CCMR3.w		; TIM1 Capture/Compare mode register 3
+
+	EXTERN TIM1_CCMR4.w		; TIM1 Capture/Compare mode register 4
+
+	EXTERN TIM1_CCER1.w		; TIM1 Capture/Compare enable register 1
+
+	EXTERN TIM1_CCER2.w		; TIM1 Capture/Compare enable register 2
+
+	EXTERN TIM1_CNTRH.w		; Data bits High
+
+	EXTERN TIM1_CNTRL.w		; Data bits Low
+
+	EXTERN TIM1_PSCRH.w		; Data bits High
+
+	EXTERN TIM1_PSCRL.w		; Data bits Low
+
+	EXTERN TIM1_ARRH.w		; Data bits High
+
+	EXTERN TIM1_ARRL.w		; Data bits Low
+
+	EXTERN TIM1_RCR.w		; TIM1 Repetition counter register
+
+	EXTERN TIM1_CCR1H.w		; Data bits High
+
+	EXTERN TIM1_CCR1L.w		; Data bits Low
+
+	EXTERN TIM1_CCR2H.w		; Data bits High
+
+	EXTERN TIM1_CCR2L.w		; Data bits Low
+
+	EXTERN TIM1_CCR3H.w		; Data bits High
+
+	EXTERN TIM1_CCR3L.w		; Data bits Low
+
+	EXTERN TIM1_CCR4H.w		; Data bits High
+
+	EXTERN TIM1_CCR4L.w		; Data bits Low
+
+	EXTERN TIM1_BKR.w		; TIM1 Break register
+
+	EXTERN TIM1_DTR.w		; TIM1 Dead-time register
+
+	EXTERN TIM1_OISR.w		; TIM1 Output idle state register
+
+; 16-Bit Timer 2 (TIM2)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN TIM2_CR1.w		; TIM2 Control register 1
+
+	EXTERN TIM2_IER.w		; TIM2 Interrupt enable register
+
+	EXTERN TIM2_SR1.w		; TIM2 Status register 1
+
+	EXTERN TIM2_SR2.w		; TIM2 Status register 2
+
+	EXTERN TIM2_EGR.w		; TIM2 Event Generation register
+
+	EXTERN TIM2_CCMR1.w		; TIM2 Capture/Compare mode register 1
+
+	EXTERN TIM2_CCMR2.w		; TIM2 Capture/Compare mode register 2
+
+	EXTERN TIM2_CCMR3.w		; TIM2 Capture/Compare mode register 3
+
+	EXTERN TIM2_CCER1.w		; TIM2 Capture/Compare enable register 1
+
+	EXTERN TIM2_CCER2.w		; TIM2 Capture/Compare enable register 2
+
+	EXTERN TIM2_CNTRH.w		; Data bits High
+
+	EXTERN TIM2_CNTRL.w		; Data bits Low
+
+	EXTERN TIM2_PSCR.w		; TIM2 Prescaler register
+
+	EXTERN TIM2_ARRH.w		; Data bits High
+
+	EXTERN TIM2_ARRL.w		; Data bits Low
+
+	EXTERN TIM2_CCR1H.w		; Data bits High
+
+	EXTERN TIM2_CCR1L.w		; Data bits Low
+
+	EXTERN TIM2_CCR2H.w		; Data bits High
+
+	EXTERN TIM2_CCR2L.w		; Data bits Low
+
+	EXTERN TIM2_CCR3H.w		; Data bits High
+
+	EXTERN TIM2_CCR3L.w		; Data bits Low
+
+; 16-Bit Timer 3 (TIM3)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN TIM3_CR1.w		; TIM3 Control register 1
+
+	EXTERN TIM3_IER.w		; TIM3 Interrupt enable register
+
+	EXTERN TIM3_SR1.w		; TIM3 Status register 1
+
+	EXTERN TIM3_SR2.w		; TIM3 Status register 2
+
+	EXTERN TIM3_EGR.w		; TIM3 Event Generation register
+
+	EXTERN TIM3_CCMR1.w		; TIM3 Capture/Compare mode register 1
+
+	EXTERN TIM3_CCMR2.w		; TIM3 Capture/Compare mode register 2
+
+	EXTERN TIM3_CCER1.w		; TIM3 Capture/Compare enable register 1
+
+	EXTERN TIM3_CNTRH.w		; Data bits High
+
+	EXTERN TIM3_CNTRL.w		; Data bits Low
+
+	EXTERN TIM3_PSCR.w		; TIM3 Prescaler register
+
+	EXTERN TIM3_ARRH.w		; Data bits High
+
+	EXTERN TIM3_ARRL.w		; Data bits Low
+
+	EXTERN TIM3_CCR1H.w		; Data bits High
+
+	EXTERN TIM3_CCR1L.w		; Data bits Low
+
+	EXTERN TIM3_CCR2H.w		; Data bits High
+
+	EXTERN TIM3_CCR2L.w		; Data bits Low
+
+; 8-Bit  Timer 4 (TIM4)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN TIM4_CR1.w		; TIM4 Control register 1
+
+	EXTERN TIM4_IER.w		; TIM4 Interrupt enable register
+
+	EXTERN TIM4_SR.w		; TIM4 Status register
+
+	EXTERN TIM4_EGR.w		; TIM4 Event Generation register
+
+	EXTERN TIM4_CNTR.w		; TIM4 Counter
+
+	EXTERN TIM4_PSCR.w		; TIM4 Prescaler register
+
+	EXTERN TIM4_ARR.w		; TIM4 Auto-reload register
+
+; 10-Bit A/D Converter (ADC)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN ADC_CSR.w		; ADC Control/Status Register
+
+	EXTERN ADC_CR1.w		; ADC Configuration Register 1
+
+	EXTERN ADC_CR2.w		; ADC Configuration Register 2
+
+	EXTERN ADC_DRH.w		; Data bits High
+
+	EXTERN ADC_DRL.w		; Data bits Low
+
+	EXTERN ADC_TDRH.w		; Schmitt trigger disable High
+
+	EXTERN ADC_TDRL.w		; Schmitt trigger disable Low
+
+;  Controller Area Network (CAN)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN CAN_MCR.w		; Master Control Register
+
+	EXTERN CAN_MSR.w		; Master Status Register
+
+	EXTERN CAN_TSR.w		; Transmit Status Register
+
+	EXTERN CAN_TPR.w		; Transmit Priority Register
+
+	EXTERN CAN_RFR.w		; Receive FIFO Register
+
+	EXTERN CAN_IER.w		; Interrupt Enable Register
+
+	EXTERN CAN_DGR.w		; Diagnosis Register
+
+	EXTERN CAN_FPSR.w		; Filter Page Select Register
+
+	EXTERN CAN_P0.w		; MCSR, MCSR, F0R1,  F2R1, F4R1, MCSR, ESR, MFMI - CAN Paged Register 0
+
+	EXTERN CAN_P1.w		; MDLCR, MDLCR, F0R2, F2R2, F4R2, MDLCR, EIER, MDLCR - CAN Paged  Register 1
+
+	EXTERN CAN_P2.w		; MIDR1, MIDR1, F0R3, F2R3, F4R3, MIDR1, TECR,  MIDR1 - CAN Paged Register 2
+
+	EXTERN CAN_P3.w		; MIDR2, MIDR2, F0R4, F2R4, F4R4, MIDR2, RECR,  MIDR2 - CAN Paged Register 3
+
+	EXTERN CAN_P4.w		; MIDR3, MIDR3, F0R5, F2R5, F4R5, MIDR3, BTCR1, MIDR3 - CAN Paged Register 4
+
+	EXTERN CAN_P5.w		; MIDR4, MIDR4, F0R6, F2R6, F4R6, MIDR4, BTCR2, MIDR4 - CAN Paged Register 5
+
+	EXTERN CAN_P6.w		; MDAR1, MDAR1, F0R7, F2R7, F4R7, MDAR1, Reserved, MDAR1 - CAN Paged Register 6
+
+	EXTERN CAN_P7.w		; MDAR2, MDAR2, F0R8, F2R8, F4R8, MDAR2, Reserved, MDAR2 - CAN Paged Register 7
+
+	EXTERN CAN_P8.w		; MDAR3, MDAR3, F1R1, F3R1, F5R1, MDAR3, FMR1, MDAR3 - CAN Paged  Register 8
+
+	EXTERN CAN_P9.w		; MDAR4, MDAR4, F1R2, F3R2, F5R2, MDAR4, FMR1, MDAR4 - CAN Paged  Register 9
+
+	EXTERN CAN_PA.w		; MDAR5, MDAR5, F1R3, F3R3, F5R3, MDAR5, FCR2, MDAR5 - CAN Paged  Register A
+
+	EXTERN CAN_PB.w		; MDAR6, MDAR6, F1R4, F3R4, F5R4, MDAR6, FCR3, MDAR6 - CAN Paged  Register B
+
+	EXTERN CAN_PC.w		; MDAR7, MDAR7, F1R5, F3R5, F5R5, MDAR7, FCR4, MDAR7 - CAN Paged  Register C
+
+	EXTERN CAN_PD.w		; MDAR8, MDAR8, F1R6, F3R6, F5R6, MDAR8, Reserved, MDAR8 - CAN Paged Register D
+
+	EXTERN CAN_PE.w		; MTSRL, MTSRL, F1R7, F3R7, F5R7, MTSLR, Reserved, MTSRL - CAN Paged Register E
+
+	EXTERN CAN_PF.w		; MTSRH, MTSRH, F1R8, F3R8, F5R8, MTSRH, Reserved, MTSRH - CAN Paged Register F
+
+;  Global configuration register (CFG)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN CFG_GCR.w		; CFG Global configuration register
+
+; Interrupt Software Priority Register (ITC)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	EXTERN ITC_SPR1.w		; Interrupt Software priority register 1
+
+	EXTERN ITC_SPR2.w		; Interrupt Software priority register 2
+
+	EXTERN ITC_SPR3.w		; Interrupt Software priority register 3
+
+	EXTERN ITC_SPR4.w		; Interrupt Software priority register 4
+
+	EXTERN ITC_SPR5.w		; Interrupt Software priority register 5
+
+	EXTERN ITC_SPR6.w		; Interrupt Software priority register 6
+
+	EXTERN ITC_SPR7.w		; Interrupt Software priority register 7
+
+	#endif ; __STM8S208M__

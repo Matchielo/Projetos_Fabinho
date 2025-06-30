@@ -36,7 +36,7 @@
 // Bits:    DP G F E D C B A
 // Value:   1  1 0 0 0 0 0 0  (0b11000000 = 0xC0)
 
-const uint8_t digit_patterns[] =
+const uint8_t digit_patterns[5] =
 {
 //   			  DP GFEDCBA  Hex
     0xC0, // 0b11000000, // 0 - dp,g OFF; a,b,c,d,e,f ON
