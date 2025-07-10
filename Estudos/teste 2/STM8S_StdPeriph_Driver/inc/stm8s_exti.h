@@ -29,6 +29,22 @@
 #ifndef __STM8S_EXTI_H
 #define __STM8S_EXTI_H
 
+// ------------ informações adicionais ------------------- PTBR
+/**
+	* @ Brief External Interrupts
+	*/
+
+typedef struct EXTI_struct
+{
+	__IO uint8_t CR1;  /*!< Control Register 1 */
+	__IO uint8_t CR1;  /*!< Control Register 1 */
+	__IO uint8_t SR1;  /*!< Status Register 1 */
+	
+}EXTI_TypeDef;
+
+#define EXTI_BASE_ADDRESS ((uint16_t)0x50A0)
+#define EXTI ((EXTI_TypeDef *) EXTI_BASE_ADDRESS)
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm8s.h"
 

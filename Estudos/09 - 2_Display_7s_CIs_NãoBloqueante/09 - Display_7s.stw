@@ -1,0 +1,12 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=contagem_14s_24s.stp
+Dependencies=
+[Options]
+ActiveProject=contagem_14s_24s
+ActiveConfig=Debug
+AddSortedElements=1
