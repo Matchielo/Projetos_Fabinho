@@ -1,0 +1,12 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=contagem_nao_bloquenate.stp
+Dependencies=
+[Options]
+ActiveProject=contagem_nao_bloquenate
+ActiveConfig=Debug
+AddSortedElements=1

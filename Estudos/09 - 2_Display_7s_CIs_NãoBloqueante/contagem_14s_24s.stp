@@ -61,7 +61,7 @@ String.100.2=STM8 Cosmic
 String.100.3=ST7 Metrowerks V1.1
 String.100.4=Raisonance
 String.101.0=STM8 Cosmic
-String.102.0=C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8
+String.102.0=
 String.103.0=
 String.104.0=Hstm8
 String.105.0=Lib
@@ -141,7 +141,7 @@ String.100.2=STM8 Cosmic
 String.100.3=ST7 Metrowerks V1.1
 String.100.4=Raisonance
 String.101.0=STM8 Cosmic
-String.102.0=C:\Program Files (x86)\COSMIC\FSE_Compilers\CXSTM8
+String.102.0=
 String.103.0=
 String.104.0=Hstm8
 String.105.0=Lib
@@ -314,6 +314,16 @@ Next=Root.Source Files.stm8s_stdperiph_driver\src\stm8s_i2c.c
 [Root.Source Files.stm8s_stdperiph_driver\src\stm8s_i2c.c]
 ElemType=File
 PathName=stm8s_stdperiph_driver\src\stm8s_i2c.c
+Next=Root.Source Files.stm8s_stdperiph_driver\src\stm8s_itc.c
+
+[Root.Source Files.stm8s_stdperiph_driver\src\stm8s_itc.c]
+ElemType=File
+PathName=stm8s_stdperiph_driver\src\stm8s_itc.c
+Next=Root.Source Files.stm8s_stdperiph_driver\src\stm8s_tim1.c
+
+[Root.Source Files.stm8s_stdperiph_driver\src\stm8s_tim1.c]
+ElemType=File
+PathName=stm8s_stdperiph_driver\src\stm8s_tim1.c
 Next=Root.Source Files.stm8s_stdperiph_driver\src\stm8s_tim4.c
 
 [Root.Source Files.stm8s_stdperiph_driver\src\stm8s_tim4.c]
@@ -416,6 +426,16 @@ Next=Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_i2c.h
 [Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_i2c.h]
 ElemType=File
 PathName=stm8s_stdperiph_driver\inc\stm8s_i2c.h
+Next=Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_itc.h
+
+[Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_itc.h]
+ElemType=File
+PathName=stm8s_stdperiph_driver\inc\stm8s_itc.h
+Next=Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_tim1.h
+
+[Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_tim1.h]
+ElemType=File
+PathName=stm8s_stdperiph_driver\inc\stm8s_tim1.h
 Next=Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_tim4.h
 
 [Root.Include Files.stm8s_stdperiph_driver\inc\stm8s_tim4.h]
