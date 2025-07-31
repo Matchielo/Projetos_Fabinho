@@ -52,6 +52,9 @@
 #define BOTAO_24S_PORT	GPIOD					// Porta D, pino 3 para o botão de 14 segundos.
 #define BOTAO_24S_PIN		GPIO_PIN_3
 
+#define BOTAO_PAUSE_PORT	GPIOD				// Porta D, pino 3 para o botão de pause
+#define BOTAO_PAUSE_PIN		GPIO_PIN_4
+
 // Pino para o Buzzer
 #define BUZZER_PORT		GPIOD
 #define BUZZER_PIN		GPIO_PIN_0
@@ -68,18 +71,108 @@
 // Isso impede que o compilador faça otimizações que poderiam usar valores "antigos" da variável.
 
 volatile uint8_t tempo_restante = 0;		// Armazena o valor atual da contagem regressiva
-volatile uint8_t em_contagem = 0;		// Flag(Sinalizador): 1 se a contagem ativa, 0 se não
 volatile uint8_t contador_ms = 0;		// Cotador milessegundos. Incrementado no IRS a cada 1ms
 																		// Quando chega a 1000ms 1 segundo se passou
+
+// Flag de cintrole de Estado
+volatile uint8_t flag_run		// 0 = pausado / 1 = rodando. Controla a lógica de tempo
+volatile uint8_t flag_start	// 0 = nunca iniciado / 1 = Já iniciado - Permite que o pause funcione após o start
+
 
 // Variáveis para a sequência de finalização (piscar displays e buzzer)
 volatile uint8_t fim_contagem_estado = 0;		//variável de estado 
 																						// 0 = inativo, >0 = estado atual da sequência (1 a 6).
 volatile uint8_t contador_ms_sequencia = 0; // Contador de milissegundos para controlar o tempo de cada estado da sequência.
 
-
+// ---------- Definicões do protótipo ----------
+void InitGPIO(void);
 
 main()
 {
 	while (1);
+}
+
+// ---------- Rotina de Interrupção (ISR) do Timer 4 -----------
+// Essa função executa a cada 1 ms
+INTERRUPT_HANFLER(TIM4_UPD_OVF_IRQHandler, 23)
+{
+	// Limpla flag de Interrupção
+	TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
+	
+	// O portão
+	// Se a Flag fot 0 (pausado), não faz mais nada
+	// Pausa tanto a contagem 
+	if(Flag_run = 0)
+	{
+		return // Sai da interrução imediatamente
+	}
+	
+	// Lógica de contagem principal
+	if(fim_contagem_estado == 0)
+	{
+		contador_ms ++;
+		
+		if(contador_ms >+ 1000)		// 1 Segundo se passou
+		{
+			contador_ms = 0;
+			if(tempo_restante > 0)
+			{
+				tempo_restante--;
+				AtualizaDisplay(tempo_restante);
+			}
+			if(tempo_restante == 0)	// Transição para a animação final
+			{
+				// A flag_run continua em 1 para permitir que a animação (que é baseada em tempo) rode.
+				// O botão de pause poderá pausar a animação.
+				
+				fim_contagem_estado = 1;
+				contador_ms_sequencia = 0;
+			}
+		}
+	}
+	
+	// Sequenciador de Finalização (só executa quando ativado)
+	if(fim_contagem_estado > 0)
+	{
+		contador_ms_sequencia ++;
+		
+		if(contador_ms_sequencia == 1)
+		{
+			AtualizaDisplay(0);
+			GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
+		}
+		if(contador_ms_sequencia >= 1000)
+		{
+			GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+			ApagarDisplay();
+			
+			// Reseta todas as Flags ao estado inicial
+			fim_contagem_estado = 0;
+			flag_run = 0;
+			flag_start = 0;
+		}
+	}
+	
+}
+
+// --------- Definição dos pinos ---------
+void InitGPIO(void)
+{
+	// Definição dos Pinos do display
+	GPIO_Init(BCD_A_PORT, BCD_A_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+	GPIO_Init(BCD_B_PORT, BCD_B_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+  GPIO_Init(BCD_C_PORT, BCD_C_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+  GPIO_Init(BCD_D_PORT, BCD_D_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+	
+	// Pinos dos Latchs
+	GPIO_Init(LATCH_01_PORT, LATCH_01_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+  GPIO_Init(LATCH_02_PORT, LATCH_02_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+	
+	// Pinos para os botões
+	GPIO_Init(BOTAO_14S_PORT, BOTAO_14S_PIN, GPIO_MODE_IN_PU_NO_IT);
+	GPIO_Init(BOTAO_24S_PORT, BOTAO_24S_PIN, GPIO_MODE_IN_PU_NO_IT);
+	GPIO_Init(BOTAO_PAUSE_PORT, BOTAO_PAUSE_PIN, GPIO_MODE_IN_PU_NO_IT);
+	
+	// Pino para o Buzzer
+	GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 }
