@@ -20,9 +20,22 @@
 #include "stm8s_tim4.h"      // Biblioteca da SPL para o Timer 4. Usado para gerar interrupções de tempo.
 #include "stm8s_itc.h"       // Biblioteca da SPL para o Controlador de Interrupção (ITC). Usado para prioridades de interrupção.
 
+#include "stm8s_flash.h"		// Para salvar os IDs dos controles na memória permanente (EEPROM)
 
 // ---------- Definição da Pinagem --------- //
 // Macros para associar nomes legíveis a pinos específicos do microcontrolador.
+
+// Pino onde o receptor de RF está conectado (PA1)
+#define RADIO_DATA_PORT		GPIOA
+#define RADIO_DATA_PIN		GPIO_PIN_1
+
+// Endereço na EEPROM onde vamos salvar o ID do controle cadastrado
+#define EEPROM_CONTROLE_ID  0x4000
+
+// Definição das máscaras de bits para os botões.
+#define MASK_BOTAO_14S      (1UL << 20)
+#define MASK_BOTAO_24S      (1UL << 21)
+#define MASK_BOTAO_STARTSTOP (1UL << 22)
 
 // Pinos LE (Latch Enable) para os decodificadores.
 #define LATCH_01_PORT		GPIOC		// Porta C, Pino 02
@@ -84,10 +97,26 @@ volatile uint8_t fim_contagem_estado = 0;		//variável de estado
 																						// 0 = inativo, >0 = estado atual da sequência (1 a 6).
 volatile uint8_t contador_ms_sequencia = 0; // Contador de milissegundos para controlar o tempo de cada estado da sequência.
 
+// Enum para tornar a máquina de estados legível
+typedef enum {
+    HT_STATE_SCAN_A = 0, HT_STATE_SCAN_B, HT_STATE_COUNT_CAL, HT_STATE_RX_PILOT,
+    HT_STATE_RX_LEVEL0, HT_STATE_RX_DATABIT, HT_STATE_RX_LEVEL1, HT_STATE_SCAN_NEXT_BIT
+} HT_State_t;
+
+// 'volatile' é crucial, pois estas variáveis são compartilhadas entre a main e a ISR
+volatile HT_State_t ht_state = HT_STATE_SCAN_A;
+volatile uint32_t   ht_data_buffer = 0;       // Buffer para os 28-32 bits recebidos
+volatile uint8_t    ht_bit_counter = 0;
+volatile uint8_t    ht_time_counter = 0;
+volatile uint8_t    ht_bittime = 0;
+volatile bool       flag_reception_code = FALSE; // Avisa que uma nova mensagem de rádio chegou
+volatile bool       modo_cadastro_ativo = FALSE;   // Avisa que estamos no modo de pareamento
+
 // ---------- Definicões do protótipo ----------
 void InitGPIO(void);               // Configura os pinos de E/S.
 void InitCLOCK(void);              // Configura o clock do sistema.
 void TIM4_Config(void);            // Configura o Timer 4 para gerar interrupções.
+Void TIM1_Config(void);						 // Configura o Timer 1 para gerar interrupções
 void WriteBCD(uint8_t valor);      // Converte e envia um dígito para os pinos BCD.
 void PulseLatch(GPIO_TypeDef* porta, uint8_t pino); // Gera um pulso no pino de latch do display.
 void ApagarDisplay(void);          // Apaga todos os segmentos dos displays.
@@ -255,6 +284,10 @@ void InitGPIO(void)
 	
 	// Pino do Buzzer: Saída Push-Pull, velocidade rápida, inicialmente LOW (desligado).
 	GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+	
+	// Configura o pino de entrada do Rádio (PA1) como entrada flutuante, sem interrupção de pino
+	// pois a amostragem será feita pelo timer.
+  GPIO_Init(RADIO_DATA_PORT, RADIO_DATA_PIN, GPIO_MODE_IN_FL_NO_IT);
 }
 
 // Função: InitCLOCK
@@ -284,6 +317,22 @@ void InitCLOCK(void)
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER4, ENABLE); // Habilita o clock para o Timer 4.
 }
 
+
+Void TIM1_Config(void)
+{
+	 // --- Inicializa o Timer 1 para gerar interrupções a cada 40 µs ---
+
+    TIM1_DeInit();
+
+    // Prescaler e Auto-Reload
+    // Objetivo: 16 MHz / (prescaler * ARR) = 25 kHz  ?  intervalo = 40 µs
+    // Exemplo: prescaler = 4 ? ARR = 160
+
+    TIM1_TimeBaseInit(160, TIM1_COUNTERMODE_UP, 160, 1); // ARR = 160, Prescaler = 160 (Prescaler = 160-1 internamente)
+    TIM1_ITConfig(TIM1_IT_UPDATE, ENABLE);               // Habilita interrupção de estouro
+    TIM1_Cmd(ENABLE);                                    // Liga o Timer
+
+}
 // Função: TIM4_Config
 // Configura o Timer 4 para gerar uma interrupção a cada 1 milissegundo.
 // Clock do Timer 4: 16 MHz (HSI) / 128 (Prescaler) = 125.000 Hz.
