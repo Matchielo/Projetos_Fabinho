@@ -1,13 +1,13 @@
 /* MAIN.C file - STM8S903K3
- * Desenvolvimento de contagem não bloquente 
- * 
+ * Desenvolvimento de contagem nÃ£o bloquente
+ *
  * Este programa configura um microcontrolador STM8S903K3 para controlar
  * dois displays BCD de 7 segmentos. Ele permite iniciar contagens regressivas
- * de 14 ou 24 segundos através de botões, com feedback de áudio (buzzer)
+ * de 14 ou 24 segundos atravÃ©s de botÃµes, com feedback de Ã¡udio (buzzer)
  * e visual (piscar os displays) ao final de cada contagem.
- * A comunicação com os displays BCD é feita através de pinos de dados e latches.
+ * A comunicaÃ§Ã£o com os displays BCD Ã© feita atravÃ©s de pinos de dados e latches.
  *
- * Versão atual: Contagem Não Bloquente (com interrupção).
+ * VersÃ£o atual: Contagem NÃ£o Bloquente com lÃ³gica de pausa baseada em flag Ãºnica.
  *
  * Copyright (c) 2002-2005 STMicroelectronics
  */
@@ -15,28 +15,18 @@
 
 // ---------- Bibliotecas ---------- //
 
-#include "stm8s.h"           // Biblioteca principal da SPL. Contém definições gerais para STM8.
-#include "stm8s903k.h"       // Definições específicas do seu modelo de MCU (STM8S903K3).
-#include "stm8s_tim4.h"      // Biblioteca da SPL para o Timer 4. Usado para gerar interrupções de tempo.
-#include "stm8s_itc.h"       // Biblioteca da SPL para o Controlador de Interrupção (ITC). Usado para prioridades de interrupção.
+#include "stm8s.h"           // Biblioteca principal da SPL. ContÃ©m definiÃ§Ãµes gerais para STM8.
+#include "stm8s903k.h"       // DefiniÃ§Ãµes especÃ­ficas do seu modelo de MCU (STM8S903K3).
+#include "stm8s_tim1.h" // Biblioteca da SPL para o Timer 1
+#include "stm8s_tim4.h"      // Biblioteca da SPL para o Timer 4. Usado para gerar interrupÃ§Ãµes de tempo.
+#include "stm8s_itc.h"       // Biblioteca da SPL para o Controlador de InterrupÃ§Ã£o (ITC). Usado para prioridades de interrupÃ§Ã£o.
+#include "stm8s_flash.h" // NecessÃ¡rio para funÃ§Ãµes de EEPROM/Flash
+#include "protocol_ht6p20b.h"
 
-#include "stm8s_flash.h"		// Para salvar os IDs dos controles na memória permanente (EEPROM)
-
-// ---------- Definição da Pinagem --------- //
-// Macros para associar nomes legíveis a pinos específicos do microcontrolador.
-
-// Pino onde o receptor de RF está conectado (PA1)
-#define RADIO_DATA_PORT		GPIOA
-#define RADIO_DATA_PIN		GPIO_PIN_1
-
-// Endereço na EEPROM onde vamos salvar o ID do controle cadastrado
+//
 #define EEPROM_CONTROLE_ID  0x4000
 
-// Definição das máscaras de bits para os botões.
-#define MASK_BOTAO_14S      (1UL << 20)
-#define MASK_BOTAO_24S      (1UL << 21)
-#define MASK_BOTAO_STARTSTOP (1UL << 22)
-
+// ---------- DefiniÃ§Ã£o da Pinagem --------- //
 // Pinos LE (Latch Enable) para os decodificadores.
 #define LATCH_01_PORT		GPIOC		// Porta C, Pino 02
 #define LATCH_01_PIN		GPIO_PIN_2
@@ -44,8 +34,8 @@
 #define LATCH_02_PORT		GPIOC
 #define LATCH_02_PIN		GPIO_PIN_1
 
-// Pinos de Dados BCD (conectados às entradas A, B, C, D do decodificador BCD para 7 segmentos)
-// Estes 4 pinos transmitem o valor binário codificado em decimal para o display.
+// Pinos de Dados BCD (conectados Ã s entradas A, B, C, D do decodificador BCD para 7 segmentos)
+// Estes 4 pinos transmitem o valor binÃ¡rio codificado em decimal para o display.
 #define BCD_A_PORT	GPIOB		// Porta B, Pino 0 -- BIT A
 #define BCD_A_PIN		GPIO_PIN_0
 
@@ -58,345 +48,565 @@
 #define BCD_D_PORT	GPIOB		// BIT D
 #define BCD_D_PIN		GPIO_PIN_3
 
-// Pinos para os Botões (Entradas com Pull-up)
-#define BOTAO_14S_PORT	GPIOD					// Porta D, pino 2 para o botão de 14 segundos.
+// Pinos para os BotÃµes (Entradas com Pull-up)
+#define BOTAO_14S_PORT	GPIOD					// Porta D, pino 2 para o botÃ£o de 14 segundos.
 #define BOTAO_14S_PIN		GPIO_PIN_2
 
-#define BOTAO_24S_PORT	GPIOD					// Porta D, pino 3 para o botão de 14 segundos.
+#define BOTAO_24S_PORT	GPIOD					// Porta D, pino 3 para o botÃ£o de 14 segundos.
 #define BOTAO_24S_PIN		GPIO_PIN_3
 
-#define BOTAO_PAUSE_PORT	GPIOD				// Porta D, pino 3 para o botão de pause
+#define BOTAO_PAUSE_PORT	GPIOD
 #define BOTAO_PAUSE_PIN		GPIO_PIN_4
 
 // Pino para o Buzzer
 #define BUZZER_PORT		GPIOD
 #define BUZZER_PIN		GPIO_PIN_0
 
-// Macro para instrução 'No Operation' (usada para pequenos atrasos de ciclo de clock ou debouncing).
-// 'NOP' significa que a CPU não faz nada por um ciclo de clock.
+// Receptor RF (conectado ao PA1)
+#define RADIO_DATA_PORT     GPIOA
+#define RADIO_DATA_PIN      GPIO_PIN_1
+
+// BotÃ£o de Cadastro (PB9)
+#define BOTAO_CADASTRO_PORT GPIOB
+#define BOTAO_CADASTRO_PIN  GPIO_PIN_7  // PB9 fÃ­sico
+
+// Macro para instruÃ§Ã£o 'No Operation' (usada para pequenos atrasos de ciclo de clock ou debouncing).
+// 'NOP' significa que a CPU nÃ£o faz nada por um ciclo de clock.
 #define NOP() _asm("nop")
 
-// ---------- Variáveis Globais ---------
+// --- CÃ³digo RF recebido ---
+#define MASCARA_ID_CONTROLE 0xFFFFFF00
 
-// Variáveis declaradas fora de qualquer função. Elas são acessíveis por todas as funções.
-// 'volatile' é crucial: informa ao compilador que o valor dessas variáveis pode mudar
-// a qualquer momento por algo externo (neste caso, a Rotina de Serviço de Interrupção - ISR).
-// Isso impede que o compilador faça otimizações que poderiam usar valores "antigos" da variável.
+// ---------- VariÃ¡veis Globais ---------
+// 'volatile' informa ao compilador que o valor pode mudar a qualquer momento
+// por uma rotina externa (a interrupÃ§Ã£o), evitando otimizaÃ§Ãµes indevidas.
 
-volatile uint8_t tempo_restante = 0;		// Armazena o valor atual da contagem regressiva
-volatile uint8_t contador_ms = 0;		// Cotador milessegundos. Incrementado no IRS a cada 1ms
-																		// Quando chega a 1000ms 1 segundo se passou
+volatile uint8_t tempo_restante = 0;	    // Armazena o valor atual da contagem regressiva
+volatile uint16_t contador_ms = 0;	    // Contador de milissegundos, incrementado na ISR
 
-// Flag de cintrole de Estado
-volatile uint8_t flag_run;		// 0 = pausado / 1 = rodando. Controla a lógica de tempo
-volatile uint8_t flag_start;	// 0 = nunca iniciado / 1 = Já iniciado - Permite que o pause funcione após o start
+// --- NOVAS FLAGS DE CONTROLE (baseadas na lÃ³gica Assembly) ---
+volatile uint8_t flag_run = 0;              // 0 = Pausado, 1 = Rodando. Controla toda a lÃ³gica de tempo.
+volatile uint8_t flag_start = 0;            // 0 = Nunca iniciado, 1 = JÃ¡ iniciado. Permite que o pause sÃ³ funcione apÃ³s o primeiro start.
 
+// VariÃ¡veis para a sequÃªncia de finalizaÃ§Ã£o (piscar displays e buzzer)
+volatile uint8_t fim_contagem_estado = 0;	    // Estado atual da animaÃ§Ã£o de fim de contagem
+volatile uint16_t contador_ms_sequencia = 0;    // Contador de tempo para controlar os estados da animaÃ§Ã£o
 
-// Variáveis para a sequência de finalização (piscar displays e buzzer)
-volatile uint8_t fim_contagem_estado = 0;		//variável de estado 
-																						// 0 = inativo, >0 = estado atual da sequência (1 a 6).
-volatile uint8_t contador_ms_sequencia = 0; // Contador de milissegundos para controlar o tempo de cada estado da sequência.
+// VÃ¡riÃ¡veis para o rÃ¡dio
+volatile uint8_t rf_estado = 0;         // Estado do decodificador RF
+volatile uint8_t rf_bitcount = 0;       // Contador de bits recebidos via RF
+volatile uint32_t rf_data = 0;          // Dados recebidos via RF
+volatile uint8_t rf_flag_ok = 0;        // Flag que indica que um pacote RF foi recebido corretamente
 
-// Enum para tornar a máquina de estados legível
-typedef enum {
-    HT_STATE_SCAN_A = 0, HT_STATE_SCAN_B, HT_STATE_COUNT_CAL, HT_STATE_RX_PILOT,
-    HT_STATE_RX_LEVEL0, HT_STATE_RX_DATABIT, HT_STATE_RX_LEVEL1, HT_STATE_SCAN_NEXT_BIT
-} HT_State_t;
+volatile uint16_t rf_duracao_nivel = 0; // DuraÃ§Ã£o do nÃ­vel atual do sinal RF (para decodificaÃ§Ã£o)
+volatile uint8_t rf_nivel_antigo = 1;   // Ãšltimo nÃ­vel lido do pino RF
 
-// 'volatile' é crucial, pois estas variáveis são compartilhadas entre a main e a ISR
-volatile HT_State_t ht_state = HT_STATE_SCAN_A;
-volatile uint32_t   ht_data_buffer = 0;       // Buffer para os 28-32 bits recebidos
-volatile uint8_t    ht_bit_counter = 0;
-volatile uint8_t    ht_time_counter = 0;
-volatile uint8_t    ht_bittime = 0;
-volatile bool       flag_reception_code = FALSE; // Avisa que uma nova mensagem de rádio chegou
-volatile bool       modo_cadastro_ativo = FALSE;   // Avisa que estamos no modo de pareamento
+volatile uint8_t modo_cadastro = 0;     // Flag que indica se estÃ¡ no modo de cadastro do controle remoto
 
-// ---------- Definicões do protótipo ----------
+volatile uint16_t tempo_cadastro_ms = 0;  // Timeout para sair do modo cadastro
+
+volatile uint32_t rf_codigo_cadastro = 0; // Armazena o Ãºltimo cÃ³digo lido para cadastro
+volatile uint8_t rf_cadastro_cont = 0;    // Contador de confirmaÃ§Ãµes do mesmo cÃ³digo para cadastro
+
+volatile uint16_t rf_tempo_bit = 0;      // Tempo do bit RF (nÃ£o utilizado no cÃ³digo principal)
+volatile uint16_t rf_contador_tempo = 0; // Contador auxiliar para RF (nÃ£o utilizado no cÃ³digo principal)
+
+// ---------- DefiniÃ§Ã£o dos ProtÃ³tipos -----------
+// FunÃ§Ãµes de inicializaÃ§Ã£o de hardware
 void InitGPIO(void);               // Configura os pinos de E/S.
 void InitCLOCK(void);              // Configura o clock do sistema.
-void TIM4_Config(void);            // Configura o Timer 4 para gerar interrupções.
-Void TIM1_Config(void);						 // Configura o Timer 1 para gerar interrupções
-void WriteBCD(uint8_t valor);      // Converte e envia um dígito para os pinos BCD.
-void PulseLatch(GPIO_TypeDef* porta, uint8_t pino); // Gera um pulso no pino de latch do display.
-void ApagarDisplay(void);          // Apaga todos os segmentos dos displays.
-void AtualizarDisplay(uint8_t valor); // Atualiza ambos os displays com um valor de 0 a 99.
+
+// FunÃ§Ãµes de configuraÃ§Ã£o dos timers
+void TIM1_Config(void);            // Configura o Timer 1 para RF
+void TIM4_Config(void);            // Configura o Timer 4 para gerar interrupÃ§Ãµes de tempo
+
+// FunÃ§Ãµes de controle dos displays
+void WriteBCD(uint8_t valor);      // Envia um dÃ­gito BCD para os pinos
+void PulseLatch(GPIO_TypeDef* porta, uint8_t pino); // Pulso de latch para atualizar display
+void ApagarDisplay(void);          // Apaga todos os segmentos dos displays
+void AtualizarDisplay(uint8_t valor); // Atualiza ambos os displays com um valor de 0 a 99
+
+// FunÃ§Ãµes de EEPROM
+void salvar_codigo_eeprom(uint32_t codigo); // Salva cÃ³digo do controle remoto
+uint32_t ler_codigo_eeprom(void);           // LÃª cÃ³digo do controle remoto salvo
 
 main()
 {
-	InitCLOCK();	// Configura o oscilador interno (HSI) para 16MHz e distribui clocks.
-	InitGPIO();		// Configura os pinos para displays, botões e buzzer.
-	
-	// Configura a prioridade da interrupção do Timer 4 (opcional, mas boa prática).
-	// Nível 1 é uma prioridade média. Isso é importante em sistemas com múltiplas interrupções.
-	ITC_SetSoftwarePriority(ITC_IRQ_TIM4_OVF, ITC_PRIORITYLEVEL_1);
-	
-	TIM4_Config();	// Configura o Timer 4 para gerar uma interrupção a cada 1 milissegundo.
-	
-	// **HABILITA AS INTERRUPÇÕES GLOBAIS DA CPU.**
-	enableInterrupts();	// Sem isso, mesmo que o Timer 4 gere interrupções, a CPU as ignora.
-	
-	ApagarDisplay();	// Garante que os Displays comecem desligados ao ligar o equipamento
-	
-	while (1)
-	{
-		// --- Lógica do Botão 14 Segundos ---
-		// Verifica se o botão 14 foi pressionado.
-    // 'GPIO_ReadInputPin' lê o estado do pino. 'RESET' (ou 0) indica que o botão está pressionado (pino conectado ao GND).
-		
-		if(GPIO_ReadInputPin(BOTAO_14S_PORT, BOTAO_14S_PIN) == RESET)
-		{
-			tempo_restante = 14;				// Define o tempo inicial da contagem
-			contador_ms = 0;						// Zera o contador de mls para um novo segundo inicial
-			fim_contagem_estado = 0;		// Cancela qualquer atividade que esteja acontecendo
-			flag_start = 1;							// Habilita o botão de pause
-			flag_run = 1; 							// Inicia a contagem no IRS 
-			
-			AtualizarDisplay(tempo_restante);		
-			
-			// Debounce simples: espera o botão ser solto
-			// Isso evita que um único pressionamento
-      // seja interpretado como múltiplos pressionamentos rápidos pelo MCU.
-			
-			while(GPIO_ReadInputPin(BOTAO_14S_PORT, BOTAO_14S_PIN) == RESET);
-		}
-		// --- Lógica do Botão 24 Segundos ---
-		if(GPIO_ReadInputPin(BOTAO_24S_PORT, BOTAO_24S_PIN) == RESET)
-		{ 
-			tempo_restante = 24;
-			contador_ms = 0;
-			fim_contagem_estado = 0;        // Cancela qualquer animação final
-			flag_start = 1;                 // Habilita o botão de pause
-			flag_run = 1;                   // Inicia a contagem na ISR
-			
-			AtualizarDisplay(tempo_restante);
+    // Inicializa o clock do sistema
+    InitCLOCK();		
+    // Inicializa os pinos de entrada/saÃ­da
+    InitGPIO();			
 
-			while(GPIO_ReadInputPin(BOTAO_24S_PORT, BOTAO_24S_PIN) == RESET);
-		}
-		
-		// --- Lógica para o Botão de Pausa/Continuar ---
-		if(GPIO_ReadInputPin(BOTAO_PAUSE_PORT, BOTAO_PAUSE_PIN) == RESET)
-		{
-			// Só permite pausar se a contagem estiver ativa
-			if(flag_start == 1)
-			{
-				// O "coração" do toggle: inverte o estado da flag de 0 para 1 ou de 1 para 0
-				flag_run = !flag_run;
-				
-				// Se pausou durante a atividade, garante que o buzzer desligue
-				if(flag_run == 0 && fim_contagem_estado == 0)
-				{
-					GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
-				}
-			}
-			while(GPIO_ReadInputPin(BOTAO_PAUSE_PORT, BOTAO_PAUSE_PIN) == RESET);
-		}
-		
-	}
+    // Configura prioridades das interrupÃ§Ãµes dos timers
+    ITC_SetSoftwarePriority(ITC_IRQ_TIM4_OVF, ITC_PRIORITYLEVEL_1);
+    ITC_SetSoftwarePriority(ITC_IRQ_TIM1_OVF, ITC_PRIORITYLEVEL_2);
+
+    // Inicializa Timer 1 (RF) e Timer 4 (tempo base)
+    TIM1_Config(); 		 		 
+    TIM4_Config();				
+    onInt_TM6(); // Configura Timer 6 para interrupÃ§Ã£o de RF
+
+    // Habilita interrupÃ§Ãµes globais
+    enableInterrupts();		
+
+    // Apaga displays ao ligar o aparelho
+    ApagarDisplay();		
+
+    // --- Loop Infinito Principal ---
+    while (1)
+    {
+        // BotÃ£o de 14 segundos: inicia contagem regressiva de 14s
+        if(GPIO_ReadInputPin(BOTAO_14S_PORT, BOTAO_14S_PIN) == RESET)
+        {
+            tempo_restante = 14;						
+            contador_ms = 0;								
+            fim_contagem_estado = 0;        
+            flag_start = 1;                 
+            flag_run = 1;                   
+            
+            AtualizarDisplay(tempo_restante);
+            
+            // Debounce: espera botÃ£o ser solto
+            while(GPIO_ReadInputPin(BOTAO_14S_PORT, BOTAO_14S_PIN) == RESET);
+        }
+        
+        // BotÃ£o de 24 segundos: inicia contagem regressiva de 24s
+        if(GPIO_ReadInputPin(BOTAO_24S_PORT, BOTAO_24S_PIN) == RESET)
+        { 
+            tempo_restante = 24;
+            contador_ms = 0;
+            fim_contagem_estado = 0;        
+            flag_start = 1;                 
+            flag_run = 1;                   
+            
+            AtualizarDisplay(tempo_restante);
+
+            while(GPIO_ReadInputPin(BOTAO_24S_PORT, BOTAO_24S_PIN) == RESET);
+        }
+        
+        // BotÃ£o de pausa/continua: alterna entre pausar e continuar a contagem
+        if(GPIO_ReadInputPin(BOTAO_PAUSE_PORT, BOTAO_PAUSE_PIN) == RESET)
+        {
+            if (flag_start == 1)
+            {
+                flag_run = !flag_run;
+
+                // Se pausou durante animaÃ§Ã£o final, desliga buzzer
+                if (flag_run == 0 && fim_contagem_estado > 0)
+                {
+                    GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+                }
+            }
+            
+            while(GPIO_ReadInputPin(BOTAO_PAUSE_PORT, BOTAO_PAUSE_PIN) == RESET);
+        }
+        
+        // BotÃ£o de cadastro: entra no modo cadastro do controle remoto
+        if(GPIO_ReadInputPin(BOTAO_CADASTRO_PORT, BOTAO_CADASTRO_PIN) == RESET && modo_cadastro == 0)
+        {
+                volatile long i;
+                modo_cadastro = 1;
+                tempo_cadastro_ms = 5000; // 5 segundos para receber o sinal RF
+        
+                GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
+                for(i = 0; i < 30000; i++);
+                GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+        
+                while(GPIO_ReadInputPin(BOTAO_CADASTRO_PORT, BOTAO_CADASTRO_PIN) == RESET); // Debounce
+        }
+
+        // Processa pacote RF recebido pelo protocolo HT6P20B
+        if (HT_RC_Code_Ready_Overwrite)
+        {
+            HT_RC_Code_Ready_Overwrite = FALSE;
+            uint32_t codigo = HT_RC_Buffer_Overwrite; // ou use RF_CopyBuffer se for array
+
+            // Aqui segue sua lÃ³gica de cadastro e comando, igual ao que jÃ¡ faz
+            // Exemplo:
+            if (modo_cadastro == 1)
+            {
+                // Cadastro robusto: exige dois sinais iguais para gravar
+                if (rf_codigo_cadastro == (codigo & MASCARA_ID_CONTROLE)) {
+                    rf_cadastro_cont++;
+                } else {
+                    rf_codigo_cadastro = (codigo & MASCARA_ID_CONTROLE);
+                    rf_cadastro_cont = 1;
+                }
+
+                if (rf_cadastro_cont >= 2) {
+                    volatile long j;
+                    uint8_t i;
+
+                    salvar_codigo_eeprom(codigo);
+                    modo_cadastro = 0;
+                    rf_cadastro_cont = 0;
+                    rf_codigo_cadastro = 0;
+
+                    // ConfirmaÃ§Ã£o visual/auditiva
+                    for (i = 0; i < 2; i++) {
+                        ApagarDisplay();
+                        GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
+                        for (j = 0; j < 20000; j++);
+                        GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+                        AtualizarDisplay(0);
+                        for (j = 0; j < 20000; j++);
+                    }
+                    GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+                    ApagarDisplay();
+                }
+            }
+            else
+            {
+                // Verifica se o cÃ³digo recebido Ã© igual ao salvo na EEPROM
+                uint32_t id_salvo = ler_codigo_eeprom();
+                if ((codigo & MASCARA_ID_CONTROLE) == id_salvo)
+                {
+                    uint8_t comando = codigo & 0x00000F00;
+                    switch (comando)
+                    {
+                        case 0x0100: // BotÃ£o 1 = 14s
+                            tempo_restante = 14;
+                            contador_ms = 0;
+                            fim_contagem_estado = 0;
+                            flag_start = 1;
+                            flag_run = 1;
+                            AtualizarDisplay(tempo_restante);
+                            break;
+                        case 0x0200: // BotÃ£o 2 = 24s
+                            tempo_restante = 24;
+                            contador_ms = 0;
+                            fim_contagem_estado = 0;
+                            flag_start = 1;
+                            flag_run = 1;
+                            AtualizarDisplay(tempo_restante);
+                            break;
+                        case 0x0400: // BotÃ£o 3 = Pausa
+                            if(flag_start == 1)
+                            {
+                                flag_run = !flag_run;
+                                if(flag_run == 0 && fim_contagem_estado > 0)
+                                {
+                                    GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+    }
 }
 
-// ---------- Rotina de Interrupção (IRS) do timer 4 -----------
-// Função executada automaticamente pelo micro a cada 1 mls
-// 'INTERRUPT_HANDLER' é uma macro específica do compilador cosmic para os ISRs
-// 'TIM4_UPD_OVF_IRQHandler' é o nome da função.
-// '23' é o número do vetor de interrupção para o Timer 4 (consulte o datasheet ou stm8_interrupt_vector.c).
+// ---------- Rotina de InterrupÃ§Ã£o (ISR) do Timer 1 -----------
+// InterrupÃ§Ã£o do Timer 1: decodifica sinal RF recebido no pino PA1
+@far @interrupt void TIM1_UPD_OVF_IRQHandler(void)
+{
+    uint8_t nivel_atual;
 
+    TIM1_ClearITPendingBit(TIM1_IT_UPDATE);
+
+    // LÃª o nÃ­vel do pino RF
+    nivel_atual = GPIO_ReadInputPin(RADIO_DATA_PORT, RADIO_DATA_PIN);
+
+    // Se o nÃ­vel nÃ£o mudou, sÃ³ incrementa a duraÃ§Ã£o
+    if (nivel_atual == rf_nivel_antigo)
+    {
+        rf_duracao_nivel++;
+
+        // ProteÃ§Ã£o: se ficar muito tempo sem borda, reseta decodificaÃ§Ã£o
+        if (rf_duracao_nivel > 2000) { // 2000 * 40us = 80ms safety
+            rf_duracao_nivel = 0;
+            rf_bitcount = 0;
+            rf_data = 0;
+            rf_estado = 0;
+        }
+    }
+    else
+    {
+        // Borda detectada: decodifica bit conforme duraÃ§Ã£o do nÃ­vel anterior
+        if (nivel_atual == 0)
+        {
+            // DecodificaÃ§Ã£o dos bits conforme duraÃ§Ã£o do pulso
+            if (rf_duracao_nivel > 40 && rf_duracao_nivel < 80)
+            {
+                rf_data <<= 1; // Bit 0
+                rf_bitcount++;
+            }
+            else if (rf_duracao_nivel >= 80 && rf_duracao_nivel < 120)
+            {
+                rf_data <<= 1;
+                rf_data |= 1; // Bit 1
+                rf_bitcount++;
+            }
+            else if (rf_duracao_nivel >= 180 && rf_duracao_nivel < 350)
+            {
+                // Pulso piloto/sincronismo: reseta decodificaÃ§Ã£o
+                rf_bitcount = 0;
+                rf_data = 0;
+            }
+            else
+            {
+                // DuraÃ§Ã£o invÃ¡lida: reseta decodificaÃ§Ã£o
+                rf_bitcount = 0;
+                rf_data = 0;
+            }
+        }
+
+        // Prepara para prÃ³xima contagem
+        rf_duracao_nivel = 0;
+        rf_nivel_antigo = nivel_atual;
+    }
+  
+    // Se leu 28 bits, sinaliza recepÃ§Ã£o completa
+    if (rf_bitcount == 28)
+    {
+        rf_flag_ok = 1;
+        rf_bitcount = 0;   // Prepara para prÃ³xima recepÃ§Ã£o
+    }
+}
+
+// ---------- Rotina de InterrupÃ§Ã£o (ISR) do Timer 4 -----------
+// InterrupÃ§Ã£o do Timer 4: chamada a cada 1ms, controla contagem e animaÃ§Ã£o final
 INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23)
 {
-	// Limpla flag de Interrupção
-	TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
-	
-	// O portão
-	// Se a Flag fot 0 (pausado), não faz mais nada
-	// Pausa tanto a contagem 
-	if(flag_run = 0)
-	{
-		return; // Sai da interrução imediatamente
-	}
-	
-	// Lógica de contagem principal
-	if(fim_contagem_estado == 0)
-	{
-		contador_ms ++;
-		
-		if(contador_ms >+ 1000)		// 1 Segundo se passou
-		{
-			contador_ms = 0;
-			if(tempo_restante > 0)
-			{
-				tempo_restante--;
-				AtualizarDisplay(tempo_restante);
-			}
-			if(tempo_restante == 0)	// Transição para a animação final
-			{
-				// A flag_run continua em 1 para permitir que a animação (que é baseada em tempo) rode.
-				// O botão de pause poderá pausar a animação.
-				
-				fim_contagem_estado = 1;
-				contador_ms_sequencia = 0;
-			}
-		}
-	}
-	
-	// Sequenciador de Finalização (só executa quando ativado)
-	if(fim_contagem_estado > 0)
-	{
-		contador_ms_sequencia ++;
-		
-		if(contador_ms_sequencia == 1)
-		{
-			AtualizarDisplay(0);
-			GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
-		}
-		if(contador_ms_sequencia >= 1000)
-		{
-			GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
-			ApagarDisplay();
-			
-			// Reseta todas as Flags ao estado inicial
-			fim_contagem_estado = 0;
-			flag_run = 0;
-			flag_start = 0;
-		}
-	}
-	
+    // Limpa a flag da interrupÃ§Ã£o
+    TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
+    
+    // Timeout para modo cadastro do controle remoto
+    if (modo_cadastro == 1 && tempo_cadastro_ms > 0)
+    {
+        tempo_cadastro_ms--;
+        if (tempo_cadastro_ms == 0)
+        {
+            volatile long i;
+            modo_cadastro = 0;
+            rf_cadastro_cont = 0;
+            rf_codigo_cadastro = 0;
+
+            // Sinal de falha: buzzer longo
+            GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
+            for (i = 0; i < 60000; i++);
+            GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+        }
+    }
+
+    // Se estÃ¡ pausado, nÃ£o executa contagem nem animaÃ§Ã£o
+    if (flag_run == 0)
+    {
+        return;
+    }
+    
+    // LÃ³gica de contagem principal (antes da animaÃ§Ã£o final)
+    if (fim_contagem_estado == 0)
+    {
+        contador_ms++;
+        if (contador_ms >= 1000) // 1 segundo se passou
+        {
+            contador_ms = 0;
+            if (tempo_restante > 0)
+            {
+                tempo_restante--;
+                AtualizarDisplay(tempo_restante);
+            }
+            
+            if (tempo_restante == 0) // Inicia animaÃ§Ã£o final
+            {
+                fim_contagem_estado = 1;
+                contador_ms_sequencia = 0;
+            }
+        }
+    }
+    
+    // Sequenciador de animaÃ§Ã£o final (pisca displays e buzzer)
+    if(fim_contagem_estado > 0)
+    {
+        contador_ms_sequencia++;
+        
+        switch(fim_contagem_estado)
+        {
+            case 1: // Estado 1: Apaga o display
+                if(contador_ms_sequencia == 1){ ApagarDisplay(); }
+                if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 2; }
+                break;
+            
+            case 2:	// Estado 2: Mostra "00"
+                if(contador_ms_sequencia == 1){ AtualizarDisplay(0); }	
+                if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 3; }
+                break;
+            
+            case 3:	// Estado 3: Apaga o display
+                if(contador_ms_sequencia == 1){ ApagarDisplay(); }
+                if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 4; }
+                break;
+            
+            case 4:	// Estado 4: Mostra "00"
+                if(contador_ms_sequencia == 1){ AtualizarDisplay(0); }	
+                if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 5; }
+                break;
+            
+            case 5:	// Estado 5: Apaga o display
+                if(contador_ms_sequencia == 1){ ApagarDisplay(); }
+                if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 6; }
+                break;
+            
+            case 6:	// Estado 6: Mostra "00", liga o Buzzer e finaliza tudo.
+                if(contador_ms_sequencia == 1){
+                    AtualizarDisplay(0);
+                    GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
+                }	
+                if(contador_ms_sequencia >= 1000){ // MantÃ©m por 1 segundo
+                    GPIO_WriteLow(BUZZER_PORT, BUZZER_PIN);
+                    ApagarDisplay();
+                    
+                    // Reseta todas as flags para o estado inicial
+                    fim_contagem_estado = 0;
+                    flag_run = 0;
+                    flag_start = 0;
+                }
+                break;
+        }
+    }
 }
 
-// --------- Definição dos pinos ---------
+// --- FunÃ§Ãµes Auxiliares de Hardware e Display ---
+
 void InitGPIO(void)
 {
-	// Pinos de Dados BCD (LD_A a LD_D): Saídas Push-Pull, velocidade rápida, inicialmente LOW.
-	GPIO_Init(BCD_A_PORT, BCD_A_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-	GPIO_Init(BCD_B_PORT, BCD_B_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-  GPIO_Init(BCD_C_PORT, BCD_C_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-  GPIO_Init(BCD_D_PORT, BCD_D_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-	
-	// Pinos de Latch (LATCH_01, LATCH_02): Saídas Push-Pull, velocidade rápida, inicialmente LOW.
-	GPIO_Init(LATCH_01_PORT, LATCH_01_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-  GPIO_Init(LATCH_02_PORT, LATCH_02_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-	
-	// Pinos dos Botões (BOTAO_14, BOTAO_24): Entradas com Pull-up interno, SEM interrupção.
-	// O pull-up garante que o pino esteja HIGH quando o botão não está pressionado.
-  // "NO_IT" significa que não geram interrupções (a leitura é por polling no main loop).
-	GPIO_Init(BOTAO_14S_PORT, BOTAO_14S_PIN, GPIO_MODE_IN_PU_NO_IT);
-	GPIO_Init(BOTAO_24S_PORT, BOTAO_24S_PIN, GPIO_MODE_IN_PU_NO_IT);
-	GPIO_Init(BOTAO_PAUSE_PORT, BOTAO_PAUSE_PIN, GPIO_MODE_IN_PU_NO_IT);
-	
-	// Pino do Buzzer: Saída Push-Pull, velocidade rápida, inicialmente LOW (desligado).
-	GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
-	
-	// Configura o pino de entrada do Rádio (PA1) como entrada flutuante, sem interrupção de pino
-	// pois a amostragem será feita pelo timer.
-  GPIO_Init(RADIO_DATA_PORT, RADIO_DATA_PIN, GPIO_MODE_IN_FL_NO_IT);
+    // Inicializa todos os pinos usados como saÃ­da ou entrada com pull-up
+    GPIO_Init(BCD_A_PORT, BCD_A_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+    GPIO_Init(BCD_B_PORT, BCD_B_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+    GPIO_Init(BCD_C_PORT, BCD_C_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+    GPIO_Init(BCD_D_PORT, BCD_D_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+        
+    GPIO_Init(LATCH_01_PORT, LATCH_01_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+    GPIO_Init(LATCH_02_PORT, LATCH_02_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+        
+    GPIO_Init(BOTAO_14S_PORT, BOTAO_14S_PIN, GPIO_MODE_IN_PU_NO_IT);
+    GPIO_Init(BOTAO_24S_PORT, BOTAO_24S_PIN, GPIO_MODE_IN_PU_NO_IT);
+    GPIO_Init(BOTAO_PAUSE_PORT, BOTAO_PAUSE_PIN, GPIO_MODE_IN_PU_NO_IT);
+        
+    GPIO_Init(BUZZER_PORT, BUZZER_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+        
+    GPIO_Init(RADIO_DATA_PORT, RADIO_DATA_PIN, GPIO_MODE_IN_PU_NO_IT);
+    GPIO_Init(BOTAO_CADASTRO_PORT, BOTAO_CADASTRO_PIN, GPIO_MODE_IN_PU_NO_IT);
 }
 
-// Função: InitCLOCK
-// Configura o relógio principal do microcontrolador.
 void InitCLOCK(void)
 {
-    CLK_DeInit(); // Reseta todas as configurações de clock.
-    CLK_HSECmd(DISABLE); // Desabilita oscilador externo (HSE).
-    CLK_LSICmd(DISABLE); // Desabilita oscilador interno de baixa frequência (LSI).
-    CLK_HSICmd(ENABLE);  // Habilita o oscilador interno de alta frequência (HSI).
-
-    // Espera até que o HSI esteja pronto e estável.
+    // Configura o clock do sistema para 16MHz e habilita apenas os perifÃ©ricos necessÃ¡rios
+    CLK_DeInit();
+    CLK_HSECmd(DISABLE);
+    CLK_LSICmd(DISABLE);
+    CLK_HSICmd(ENABLE);
     while (CLK_GetFlagStatus(CLK_FLAG_HSIRDY) == FALSE);
-
-    CLK_ClockSwitchCmd(ENABLE);          // Permite a troca da fonte de clock.
-    CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1); // HSI a 16MHz (16MHz / 1 = 16MHz).
-    CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1); // CPU roda na velocidade do clock do sistema (16MHz).
+    CLK_ClockSwitchCmd(ENABLE);
+    CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1);
+    CLK_SYSCLKConfig(CLK_PRESCALER_CPUDIV1);
     CLK_ClockSwitchConfig(CLK_SWITCHMODE_AUTO, CLK_SOURCE_HSI, DISABLE, CLK_CURRENTCLOCKSTATE_ENABLE);
-
-    // Habilita clocks para periféricos usados e desabilita para os não usados.
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_I2C, DISABLE);
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_SPI, DISABLE);
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_ADC, DISABLE);
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_AWU, DISABLE);
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_UART1, DISABLE);
-    CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER1, DISABLE);
-    CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER4, ENABLE); // Habilita o clock para o Timer 4.
+    CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER1, ENABLE);
+    CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER4, ENABLE);
 }
 
-
-Void TIM1_Config(void)
+void TIM1_Config(void)
 {
-	 // --- Inicializa o Timer 1 para gerar interrupções a cada 40 µs ---
-
+    // Configura Timer 1 para gerar interrupÃ§Ã£o a cada ~40us (usado para RF)
     TIM1_DeInit();
-
-    // Prescaler e Auto-Reload
-    // Objetivo: 16 MHz / (prescaler * ARR) = 25 kHz  ?  intervalo = 40 µs
-    // Exemplo: prescaler = 4 ? ARR = 160
-
-    TIM1_TimeBaseInit(160, TIM1_COUNTERMODE_UP, 160, 1); // ARR = 160, Prescaler = 160 (Prescaler = 160-1 internamente)
-    TIM1_ITConfig(TIM1_IT_UPDATE, ENABLE);               // Habilita interrupção de estouro
-    TIM1_Cmd(ENABLE);                                    // Liga o Timer
-
+    TIM1_TimeBaseInit(15, TIM1_COUNTERMODE_UP, 39, 0); // 40 Âµs
+    TIM1_ITConfig(TIM1_IT_UPDATE, ENABLE);
+    TIM1_Cmd(ENABLE);
 }
-// Função: TIM4_Config
-// Configura o Timer 4 para gerar uma interrupção a cada 1 milissegundo.
-// Clock do Timer 4: 16 MHz (HSI) / 128 (Prescaler) = 125.000 Hz.
-// Período de Autoreload: 124 (ou seja, 125 ciclos de 0 a 124).
-// Frequência de Interrupção = 125.000 Hz / 125 = 1.000 Hz (1ms por interrupção).
 
 void TIM4_Config(void)
 {
-	TIM4_DeInit();	// Reseta o Timer 4
-	TIM4_TimeBaseInit(TIM4_PRESCALER_128, 124);	// Define prescaler e autoreload.
-	// **HABILITA A INTERRUPÇÃO DE UPDATE DO TIMER 4.**
-	TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);	// Isso faz a ISR ser chamada a cada 1ms.
-	TIM4_Cmd(ENABLE);//Habilita o timer 4 para iniciar a contagem
+    // Configura Timer 4 para gerar interrupÃ§Ã£o a cada 1ms (usado para contagem e animaÃ§Ã£o)
+    TIM4_DeInit();
+    TIM4_TimeBaseInit(TIM4_PRESCALER_128, 124);
+    TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);
+    TIM4_Cmd(ENABLE);
 }
 
-// Função: writeBCD
-// Converte um valor de 0-9 para o formato BCD de 4 bits e o envia para os pinos do display.
+// Envia o valor BCD para os pinos do decodificador (A, B, C, D)
 void WriteBCD(uint8_t valor)
 {
-	// Usa operações bit a bit ('&') para verificar cada bit do 'valor' (de 0 a 9)
-	// e setar os pinos LD_A a LD_D (que correspondem a 1, 2, 4, 8) para HIGH ou LOW.
-	
-	(valor & 0x01) ? GPIO_WriteHigh(BCD_A_PORT, BCD_A_PIN) : GPIO_WriteLow(BCD_A_PORT, BCD_A_PIN);
-	(valor & 0x02) ? GPIO_WriteHigh(BCD_B_PORT, BCD_B_PIN) : GPIO_WriteLow(BCD_B_PORT, BCD_B_PIN);
-	(valor & 0x04) ? GPIO_WriteHigh(BCD_C_PORT, BCD_C_PIN) : GPIO_WriteLow(BCD_C_PORT, BCD_C_PIN);
-	(valor & 0x08) ? GPIO_WriteHigh(BCD_D_PORT, BCD_D_PIN) : GPIO_WriteLow(BCD_D_PORT, BCD_D_PIN);
+    // Escreve cada bit do valor nos pinos correspondentes
+    (valor & 0x01) ? GPIO_WriteHigh(BCD_A_PORT, BCD_A_PIN) : GPIO_WriteLow(BCD_A_PORT, BCD_A_PIN); // Bit A
+    (valor & 0x02) ? GPIO_WriteHigh(BCD_B_PORT, BCD_B_PIN) : GPIO_WriteLow(BCD_B_PORT, BCD_B_PIN); // Bit B
+    (valor & 0x04) ? GPIO_WriteHigh(BCD_C_PORT, BCD_C_PIN) : GPIO_WriteLow(BCD_C_PORT, BCD_C_PIN); // Bit C
+    (valor & 0x08) ? GPIO_WriteHigh(BCD_D_PORT, BCD_D_PIN) : GPIO_WriteLow(BCD_D_PORT, BCD_D_PIN); // Bit D
 }
 
-// Função: pulseLatch
-// Gera um pulso curto (HIGH -> LOW) em um pino de latch específico.
-// Este pulso é necessário para que o CI de latch ou decodificador BCD "capture"
-// os dados presentes nos pinos LD_A-LD_D e os exiba no display.
+// Gera um pulso de latch para atualizar o display
 void PulseLatch(GPIO_TypeDef* porta, uint8_t pino)
 {
-	GPIO_WriteHigh(porta, pino);	// Define o pino de latch para HIGH.
-	NOP(); NOP(); NOP(); NOP(); // Pequeno atraso para garantir que o pulso seja longo o suficiente.
-	GPIO_WriteLow(porta, pino);	// Define o pino de latch para LOW, completando o pulso.
+    // Sobe o pino, espera alguns ciclos e desce o pino para gerar pulso de latch
+    GPIO_WriteHigh(porta, pino); 
+    NOP(); NOP(); NOP(); NOP();  
+    GPIO_WriteLow(porta, pino);  
 }
 
-// Função: apagarDisplay
-// Envia o valor BCD 0000 (todos os bits LOW) para os displays e pulsa ambos os latches.
-// Isso garante que todos os segmentos dos displays estejam apagados.
-
+// Apaga todos os segmentos dos displays (zera os pinos BCD e atualiza ambos os latches)
 void ApagarDisplay(void)
 {
-	GPIO_WriteLow(BCD_A_PORT, BCD_A_PIN);
-	GPIO_WriteLow(BCD_B_PORT, BCD_B_PIN);
-	GPIO_WriteLow(BCD_C_PORT, BCD_C_PIN);
-	GPIO_WriteLow(BCD_D_PORT, BCD_D_PIN);
-	
-	PulseLatch(LATCH_01_PORT,LATCH_01_PIN);
-	PulseLatch(LATCH_02_PORT,LATCH_02_PIN);
+    GPIO_WriteLow(BCD_A_PORT, BCD_A_PIN);
+    GPIO_WriteLow(BCD_B_PORT, BCD_B_PIN);
+    GPIO_WriteLow(BCD_C_PORT, BCD_C_PIN);
+    GPIO_WriteLow(BCD_D_PORT, BCD_D_PIN);
+    PulseLatch(LATCH_01_PORT, LATCH_01_PIN); // Atualiza display 1
+    PulseLatch(LATCH_02_PORT, LATCH_02_PIN); // Atualiza display 2
 }
 
-// Função: AtualizarDisplay
-// Divide um número de 0 a 99 em dezenas e unidades e os exibe nos displays.
+// Atualiza os dois displays com um valor de 0 a 99
 void AtualizarDisplay(uint8_t valor)
 {
-	uint8_t unidades = valor % 10; // Calcula o dígito das unidades (ex: 14 % 10 = 4).
-	uint8_t dezenas = valor / 10;	 // Calcula o dígito das dezenas (ex: 14 / 10 = 1).
-	
-	WriteBCD(unidades);	// Envia o dígito das unidades para os pinos BCD.
-	PulseLatch(LATCH_01_PORT, LATCH_01_PIN); // Trava o valor no display das unidades.
-	
-	WriteBCD(dezenas);	// Envia o dígito das unidades para os pinos BCD.
-	PulseLatch(LATCH_02_PORT, LATCH_02_PIN); // Trava o valor no display das unidades.
+    uint8_t unidades = valor % 10; // Extrai o dÃ­gito das unidades
+    uint8_t dezenas = valor / 10;  // Extrai o dÃ­gito das dezenas
+
+    WriteBCD(unidades);                    // Envia unidades para os pinos BCD
+    PulseLatch(LATCH_01_PORT, LATCH_01_PIN); // Atualiza display das unidades
+
+    WriteBCD(dezenas);                     // Envia dezenas para os pinos BCD
+    PulseLatch(LATCH_02_PORT, LATCH_02_PIN); // Atualiza display das dezenas
 }
+
+// Salva o cÃ³digo do controle remoto na EEPROM (apenas os 24 bits de ID)
+void salvar_codigo_eeprom(uint32_t codigo)
+{
+    uint32_t id = codigo & MASCARA_ID_CONTROLE; // Mascara para pegar sÃ³ o ID
+    FLASH_Unlock(FLASH_MEMTYPE_DATA);           // Desbloqueia EEPROM para escrita
+    FLASH_ProgramByte(EEPROM_CONTROLE_ID,     (uint8_t)(id >> 24)); // Byte mais significativo
+    FLASH_ProgramByte(EEPROM_CONTROLE_ID + 1, (uint8_t)(id >> 16));
+    FLASH_ProgramByte(EEPROM_CONTROLE_ID + 2, (uint8_t)(id >> 8));
+    FLASH_ProgramByte(EEPROM_CONTROLE_ID + 3, (uint8_t)(id));       // Byte menos significativo
+    FLASH_Lock(FLASH_MEMTYPE_DATA);            // Bloqueia EEPROM novamente
+}
+
+// LÃª o cÃ³digo do controle remoto salvo na EEPROM
+uint32_t ler_codigo_eeprom(void)
+{
+    uint32_t codigo = 0;
+    codigo |= ((uint32_t)FLASH_ReadByte(EEPROM_CONTROLE_ID)) << 24;     // Byte mais significativo
+    codigo |= ((uint32_t)FLASH_ReadByte(EEPROM_CONTROLE_ID + 1)) << 16;
+    codigo |= ((uint32_t)FLASH_ReadByte(EEPROM_CONTROLE_ID + 2)) << 8;
+    codigo |= ((uint32_t)FLASH_ReadByte(EEPROM_CONTROLE_ID + 3));       // Byte menos significativo
+    return codigo;
+}
+
+// No setup:
+onInt_TM6(); // Configura Timer 6 para interrupÃ§Ã£o de RF
+
+// Na ISR do Timer 6:
+@far @interrupt void TIM6_UPD_IRQHandler (void)
+{
+    if(RF_IN_ON)
+    {
+        Read_RF_6P20();
+    }
+    TIM6_SR = 0;		
+}
+
+bool RF_IN_ON = TRUE; // Habilita leitura RF
