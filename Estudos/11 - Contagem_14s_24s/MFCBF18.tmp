@@ -1,0 +1,603 @@
+/*
+ * ==============================================================================
+ * PROJETO: Acionador de LEDs via Rádio Frequência (RF) com Função Toggle
+ * ==============================================================================
+ *
+ * Microcontrolador: STM8S903K3
+ * Protocolo de Comunicação RF: HT6P20B
+ *
+ * Visão Geral da Lógica:
+ * Este firmware é projetado para um sistema que recebe sinais de rádio (RF) de
+ * um controle remoto (padrão HT6P20B) e usa esses sinais para alternar o estado
+ * de três LEDs. O sistema permite o cadastro de novos controles remotos e possui
+ * um mecanismo de "cooldown" para evitar que múltiplos comandos sejam executados
+ * a partir de um único pacote de sinal RF.
+ *
+ * Funcionalidades Principais:
+ * - Decodificação de Sinal RF: Lê o sinal de rádio através de uma interrupção
+ * de timer, decodificando o protocolo HT6P20B.
+ * - Armazenamento em EEPROM: Salva o código de um controle remoto na memória
+ * EEPROM do microcontrolador para persistência de dados.
+ * - Função Toggle: Cada botão do controle remoto aciona uma função que inverte
+ * o estado de um LED (ligado/desligado).
+ * - Cooldown de RF: Implementa um contador para ignorar sinais repetidos do
+ * mesmo pacote RF, garantindo que cada acionamento do controle seja processado
+ * apenas uma vez.
+ * - Cadastro Simples: Permite cadastrar um novo controle remoto e um código
+ * "preset" através de botões físicos.
+ * - Feedback ao Usuário: Utiliza LEDs e um buzzer para fornecer feedback visual
+ * e sonoro sobre o status do sistema (inicialização, cadastro, comandos).
+ *
+ * Estrutura do Código:
+ * - Inclusão de bibliotecas e definições de pinos.
+ * - Variáveis globais para armazenar estados e timers.
+ * - Protótipos de funções para organização.
+ * - `main()`: A rotina principal, responsável pela inicialização e pelo loop infinito.
+ * - Funções auxiliares para configuração (GPIO, Clock, Timers).
+ * - Funções de controle de hardware (LEDs, Buzzer).
+ * - Funções de lógica de aplicação (Gravação em EEPROM, Busca de Código RF).
+ * - Rotina de interrupção do Timer 6 para a leitura RF.
+ *
+ * ==============================================================================
+ */
+
+// Bibliotecas padrão STM8 e protocolo RF
+#include "stm8s.h"            // Biblioteca principal do microcontrolador STM8
+#include "stm8s903k3.h"       // Definições específicas do modelo STM8S903K3
+#include "protocol_ht6p20b.h" // Protocolo para decodificação de comandos RF
+
+// -------------------- Definições de pinos --------------------
+// LEDs são acionados em nível BAIXO (LOW = aceso) por estarem provavelmente ligados em configuração "sinking"
+// Isso é comum em hardware onde o lado positivo já está conectado ao Vcc através de resistor
+
+// Macros para controle dos LEDs
+#define LED1_ON    GPIO_WriteLow(GPIOD, GPIO_PIN_2)   // LED1 - Status do sistema
+#define LED1_OFF   GPIO_WriteHigh(GPIOD, GPIO_PIN_2)  // LED1 OFF
+#define LED2_ON    GPIO_WriteLow(GPIOD, GPIO_PIN_3)   // LED2 - Confirmação de cadastro
+#define LED2_OFF   GPIO_WriteHigh(GPIOD, GPIO_PIN_3)  // LED2 OFF
+#define LED3_ON    GPIO_WriteLow(GPIOD, GPIO_PIN_4)   // LED3 - Terceiro LED
+#define LED3_OFF   GPIO_WriteHigh(GPIOD, GPIO_PIN_4)  // LED3 OFF
+
+// Buzzer acionado com nível ALTO (padrão sourcing)
+#define BUZZER_ON  GPIO_WriteHigh(GPIOD, GPIO_PIN_0)  // Liga buzzer (HIGH = ON)
+#define BUZZER_OFF GPIO_WriteLow(GPIOD, GPIO_PIN_0)   // Desliga buzzer (LOW = OFF)
+
+// Leitura de botões com pull-up interno ativado (nível 0 = pressionado)
+#define readCh1 GPIO_ReadInputPin(GPIOB, GPIO_PIN_7)  // Botão CH1 - Cadastro RF
+#define readCh2 GPIO_ReadInputPin(GPIOF, GPIO_PIN_4)  // Botão CH2 - Cadastro Preset
+
+// -------------------- Variáveis globais --------------------
+// Armazena estado lógico dos LEDs para função toggle
+// Armazenam o estado lógico dos LEDs (TRUE = ligado, FALSE = desligado)
+// Essenciais para a função de toggle, pois refletem o estado atual sem precisar ler o pino.
+bool led1State = FALSE;      // Estado atual do LED1
+bool led2State = FALSE;      // Estado atual do LED2
+bool led3State = FALSE;      // Estado atual do LED3
+
+// Flag de controle para habilitar/desabilitar a leitura de sinais RF.
+// Desabilita a leitura durante certas operações (ex: debounce de botões) para evitar
+// que um sinal RF recebido interfira na rotina de cadastro.
+bool RF_IN_ON = FALSE;       // Flag para habilitar leitura RF
+
+// Contadores para o algoritmo de debounce dos botões.
+// Evitam que um único toque no botão seja interpretado como múltiplos pressionamentos.
+uint16_t debounceCh1 = 0;    // Debounce botão CH1
+uint16_t debounceCh2 = 0;    // Debounce botão CH2
+
+// Timer de cooldown para o sinal RF.
+// Após um comando RF ser processado, este contador é carregado com um valor
+// e só permite outro comando quando chegar a zero, ignorando sinais repetidos
+// enviados pelo controle remoto.
+uint16_t rf_cooldown = 0;    // Timer de cooldown para evitar repetição de comandos RF
+
+// Vetor na EEPROM para armazenar o código RF do controle remoto cadastrado.
+// A diretiva `@eeprom` garante que esta variável será salva na memória não-volátil.
+@eeprom uint8_t codControler[4];  // Código RF cadastrado
+
+// -------------------- Protótipos de funções --------------------
+void InitGPIO(void);
+void Delay(uint32_t nCount);
+void SetCLK(void);
+void ToggleLED1(void);
+void ToggleLED2(void);
+void ToggleLED3(void);
+void onInt_TM6(void);
+void UnlockE2prom(void);
+void save_code_to_eeprom(void);
+void save_preset_to_eeprom(void);
+uint8_t searchCode(void);
+void BuzzerBeep(uint16_t duration);
+
+// -------------------- Função principal --------------------
+
+// ==============================================================================
+// FUNÇÃO: main()
+// ==============================================================================
+/*
+ * Ponto de entrada do programa.
+ *
+ * Responsável por:
+ * 1. Chamar todas as rotinas de inicialização e configuração (periféricos, clocks).
+ * 2. Realizar uma checagem inicial de reset de fábrica (pressionar CH1 no boot).
+ * 3. Executar uma rotina de feedback visual com os LEDs.
+ * 4. Iniciar o loop infinito (`while(1)`), onde o programa executa sua lógica
+ * principal de forma contínua:
+ * - Decrementar o timer de cooldown.
+ * - Monitorar os botões de cadastro.
+ * - Processar comandos RF recebidos.
+ *
+ * Esta função é o coração do programa, coordenando todas as demais ações.
+ */
+ 
+main()
+{
+		SetCLK();        // Ajusta clock para 16 MHz (máxima velocidade ? leitura RF mais precisa)
+    InitGPIO();      // Configura entradas e saídas
+    UnlockE2prom();  // Permite gravação na EEPROM
+    onInt_TM6();     // Ativa Timer 6 para interrupção periódica usada na leitura RF
+    
+		// Se CH1 for mantido pressionado na inicialização, apaga códigos RF da EEPROM
+    // Isso é útil para resetar o sistema sem precisar interface externa
+    if (readCh1 == 0)
+    {
+        uint16_t i;
+        Delay(100); // Debounce simples
+        for (i = 0; i < 4; i++)
+        {
+            codControler[i] = 0x00; // Apaga todos os códigos RF da EEPROM
+        }
+    }
+    
+     // Efeito visual inicial - LEDs piscam 3x
+    // Além de sinalizar que o sistema ligou, ajuda a detectar se o micro está travando no boot
+    LED1_ON;
+    LED2_ON;
+    LED3_ON;
+    Delay(100000);
+    LED1_OFF;
+    LED2_OFF;
+    LED3_OFF;
+    Delay(100000);
+    LED1_ON;
+    LED2_ON;
+    LED3_ON;
+    Delay(100000);
+    LED1_OFF;
+    LED2_OFF;
+    LED3_OFF;
+    Delay(100000);
+    LED1_ON;
+    LED2_ON;
+    LED3_ON;
+    Delay(100000);
+    LED1_OFF;
+    LED2_OFF;
+    LED3_OFF;
+    Delay(100000);
+    
+    // Loop principal do programa. O código dentro deste laço executa
+		// continuamente enquanto o microcontrolador estiver energizado.
+    while (1)
+    {
+				// Decrementa o timer de cooldown, permitindo que novos comandos RF
+				// sejam processados após o término do período de espera.
+        if (rf_cooldown > 0)
+        {
+            rf_cooldown--;
+        }
+				
+        RF_IN_ON = TRUE; // Habilita leitura RF na leitura da interrupção
+        HT_RC_Code_Ready_Overwrite = FALSE; // Reseta flag do protocolo RF
+				
+        // Controle via botão CH1 - Cadastro de controle RF
+				// Lógica de controle para o botão CH1 (Cadastro de Controle RF)
+				// Se o botão for pressionado por um tempo suficiente (debounce).
+        if (readCh1 == 0)
+        {
+            if (++debounceCh1 >= 250)
+            {
+                --debounceCh1;
+                
+                LED1_OFF;
+								LED2_OFF;
+								LED3_OFF;
+                BuzzerBeep(50000);
+                
+                if (Code_Ready == TRUE)
+                {
+                    save_code_to_eeprom(); // Salva o código recebido.
+                    Code_Ready = FALSE;
+                    
+                    LED1_OFF;
+										LED2_OFF;
+										LED3_OFF;
+                    BuzzerBeep(100000);
+                    Delay(200000);
+                    LED1_ON;
+                    LED2_ON;
+										LED2_ON;
+                }
+                else
+                {
+                    Delay(100000);
+                    LED1_ON;
+                    LED2_ON;
+										LED2_ON;
+                }
+            }
+        }
+        else
+        {
+            debounceCh1 = 0;	// Reseta o contador se o botão for solto.
+        }
+
+        // Verifica se chegou comando RF E se o cooldown já terminou
+        if (Code_Ready == TRUE && rf_cooldown == 0)
+        {
+            searchCode(); // Busca código na EEPROM e executa a ação
+            Code_Ready = FALSE;	// Reseta a flag para o próximo comando.
+            
+            // RECARREGA O COOLDOWN para ignorar os sinais repetidos do controle
+            rf_cooldown = 3000;
+        }
+        else if (Code_Ready == TRUE && rf_cooldown > 0)
+        {
+            // Se chegou um código mas ainda estamos no cooldown, apenas o descarte
+            Code_Ready = FALSE;
+        }
+    }
+}
+
+// -------------------- Funções auxiliares --------------------
+
+// ==============================================================================
+// FUNÇÃO: ToggleLED1()
+// ==============================================================================
+/*
+ * Inverte o estado do LED1.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Acessa a variável global `led1State`.
+ * - Inverte o valor da variável (de TRUE para FALSE ou vice-versa).
+ * - Baseado no novo valor da variável, chama a macro `LED1_ON` ou `LED1_OFF`.
+ * - Isso garante que o estado lógico e o estado físico do LED estejam sempre
+ * sincronizados.
+ */
+void ToggleLED1(void)
+{
+    if (led1State)
+    {
+        LED1_OFF;
+      //  led1State = FALSE;
+    }
+    else
+    {
+        LED1_ON;
+      //  led1State = TRUE;
+    }
+		Delay(100000);
+}
+
+// ==============================================================================
+// FUNÇÃO: ToggleLED2()
+// ==============================================================================
+/*
+ * Inverte o estado do LED2.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Similar à função ToggleLED1, mas opera sobre a variável `led2State` e as
+ * macros de controle do LED2.
+ */
+void ToggleLED2(void)
+{
+    if (led2State)
+    {
+        LED2_OFF;
+      //  led2State = FALSE;
+    }
+    else
+    {
+        LED2_ON;
+       // led2State = TRUE;
+    }
+		Delay(100000);
+}
+
+// ==============================================================================
+// FUNÇÃO: ToggleLED3()
+// ==============================================================================
+/*
+ * Inverte o estado do LED3.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Similar à função ToggleLED1, mas opera sobre a variável `led3State` e as
+ * macros de controle do LED3.
+ */
+void ToggleLED3(void)
+{
+    if (led3State)
+    {
+        LED3_OFF;
+        //led3State = FALSE;
+    }
+    else
+    {
+        LED3_ON;
+       // led3State = TRUE;
+    }
+		Delay(100000);
+}
+
+// ==============================================================================
+// FUNÇÃO: BuzzerBeep()
+// ==============================================================================
+/*
+ * Gera um som no buzzer por um período de tempo.
+ *
+ * Parâmetros:
+ * - `duration`: Um valor `uint16_t` que representa a duração do beep em unidades
+ * da função de delay (um valor maior resulta em um som mais longo).
+ *
+ * Lógica:
+ * - Liga o buzzer usando a macro `BUZZER_ON`.
+ * - Chama a função `Delay()` com a duração especificada.
+ * - Desliga o buzzer usando a macro `BUZZER_OFF`.
+ * A função é bloqueante, ou seja, o microcontrolador não executa outras
+ * tarefas enquanto o atraso está ativo.
+ */
+void BuzzerBeep(uint16_t duration)
+{
+    BUZZER_ON;
+    Delay(duration);
+    BUZZER_OFF;
+}
+
+// ==============================================================================
+// FUNÇÃO: save_code_to_eeprom()
+// ==============================================================================
+/*
+ * Salva o código RF recebido na EEPROM, na posição padrão de controle.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Idêntica à função `save_preset_to_eeprom()`, mas é chamada por um
+ * evento diferente (pressionar o botão CH1).
+ * - Copia os 4 bytes do `RF_CopyBuffer` para a EEPROM.
+ */
+void save_code_to_eeprom(void)
+{
+    int i = 0;
+    codControler[i]     = RF_CopyBuffer[0];
+    codControler[i + 1] = RF_CopyBuffer[1];
+    codControler[i + 2] = RF_CopyBuffer[2];
+    codControler[i + 3] = RF_CopyBuffer[3];
+}
+
+// ==============================================================================
+// FUNÇÃO: searchCode()
+// ==============================================================================
+/*
+ * Compara o código RF recebido com o código salvo na EEPROM e executa a ação.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: `uint8_t` (0 para sucesso, 1 para falha).
+ *
+ * Lógica:
+ * 1. Isola o ID do controle remoto: Aplica uma máscara (`& 0xFC`) para ignorar
+ * os bits que correspondem aos botões do controle, comparando apenas o ID
+ * único do controle remoto.
+ * 2. Valida o ID: Compara os 4 bytes do código recebido com os 4 bytes salvos.
+ * A comparação do terceiro byte usa a máscara.
+ * 3. Identifica o Botão: Se o ID do controle for válido, usa uma máscara
+ * diferente (`& 0x03`) para identificar qual botão foi pressionado (1, 2, 3)
+ * e chama a função `ToggleLEDx()` correspondente.
+ * 4. Feedback: Toca o buzzer para indicar sucesso ou falha na comparação.
+ */
+uint8_t searchCode(void)
+{
+    int i = 0;
+    uint8_t id_salvo_mascarado;
+    uint8_t id_recebido_mascarado;
+
+    // 1. Aplica a máscara para pegar SOMENTE o ID do controle, ignorando os botões.
+    id_salvo_mascarado    = codControler[i + 2] & 0xFC;
+    id_recebido_mascarado = RF_CopyBuffer[2]  & 0xFC;
+    
+    // 2. Compara o ID completo do controle
+    if (codControler[i]     == RF_CopyBuffer[0] && 
+        codControler[i + 1] == RF_CopyBuffer[1] &&
+        id_salvo_mascarado  == id_recebido_mascarado && // Compara usando a máscara
+        codControler[i + 3] == RF_CopyBuffer[3])
+    {
+        // SUCESSO! O controle é o cadastrado.
+        // 3. AGORA, verificamos qual botão foi pressionado.
+        if ((RF_CopyBuffer[2] & 0x03) == 0x01) // Tecla 1
+        {
+						led1State = !led1State;
+            ToggleLED1();
+            BuzzerBeep(30000);
+        }
+        else if ((RF_CopyBuffer[2] & 0x03) == 0x02) // Tecla 2
+        {
+            ToggleLED2();
+						led2State = !led2State;
+            BuzzerBeep(30000);
+        }
+        else if ((RF_CopyBuffer[2] & 0x03) == 0x03) // Tecla 3 (ou 4 dependendo do controle)
+        {
+            ToggleLED3();
+						led3State = !led3State;
+            BuzzerBeep(30000);
+        }
+        
+        return 0; // Código encontrado e ação executada
+    }
+    else
+    {
+        // Código não encontrado
+        BuzzerBeep(15000);
+        return 1;
+    }
+}
+
+// ==============================================================================
+// FUNÇÃO: InitGPIO()
+// ==============================================================================
+/*
+ * Inicializa e configura os pinos de entrada e saída.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Configura os pinos dos botões CH1 e CH2 como entradas com pull-up interno
+ * (`GPIO_MODE_IN_PU_NO_IT`).
+ * - Configura os pinos do buzzer e dos LEDs como saídas `Push-Pull` de alta
+ * velocidade (`GPIO_MODE_OUT_PP_LOW_FAST`).
+ */
+void InitGPIO(void)
+{
+    // Entradas com pull-up interno
+    GPIO_Init(GPIOB, GPIO_PIN_7, GPIO_MODE_IN_PU_NO_IT); // Botão CH1
+    GPIO_Init(GPIOF, GPIO_PIN_4, GPIO_MODE_IN_PU_NO_IT); // Botão CH2
+    
+    // Saídas
+    GPIO_Init(GPIOD, GPIO_PIN_0, GPIO_MODE_OUT_PP_LOW_FAST); // Buzzer no PD0
+    GPIO_Init(GPIOD, GPIO_PIN_2, GPIO_MODE_OUT_PP_LOW_FAST); // LED1 no PD2
+    GPIO_Init(GPIOD, GPIO_PIN_3, GPIO_MODE_OUT_PP_LOW_FAST); // LED2 no PD3
+    GPIO_Init(GPIOD, GPIO_PIN_4, GPIO_MODE_OUT_PP_LOW_FAST); // LED3 no PD4
+}
+
+// ==============================================================================
+// FUNÇÃO: Delay()
+// ==============================================================================
+/*
+ * Função de atraso simples (busy-wait).
+ *
+ * Parâmetros:
+ * - `nCount`: Um valor `uint32_t` para o contador.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Simplesmente decrementa o contador em um loop até que ele chegue a zero.
+ * É uma função bloqueante, o microcontrolador não executa outras tarefas
+ * enquanto este loop está rodando.
+ */
+void Delay(uint32_t nCount)
+{
+    while (nCount != 0)
+    {
+        nCount--;
+    }
+}
+
+// ==============================================================================
+// FUNÇÃO: SetCLK()
+// ==============================================================================
+/*
+ * Configura o clock principal do microcontrolador.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Escreve `0b00000000` no registrador `CLK_CKDIVR`.
+ * - Isso configura o prescaler do clock para não dividir a frequência,
+ * resultando na frequência máxima de 16 MHz.
+ */
+void SetCLK(void)
+{
+    CLK_CKDIVR = 0b00000000; // Sem divisão, máxima frequência
+}
+
+// ==============================================================================
+// FUNÇÃO: UnlockE2prom()
+// ==============================================================================
+/*
+ * Destrava a memória EEPROM para gravação.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Chama a função `FLASH_Unlock()` da biblioteca STM8 com o tipo de memória
+ * `FLASH_MEMTYPE_DATA`.
+ * - Isso desprotege a EEPROM contra escritas acidentais, permitindo que a
+ * função `save_code_to_eeprom()` grave dados nela.
+ */
+void UnlockE2prom(void)
+{
+    FLASH_Unlock(FLASH_MEMTYPE_DATA);
+}
+
+// ==============================================================================
+// FUNÇÃO: onInt_TM6()
+// ==============================================================================
+/*
+ * Configura o Timer 6 para gerar interrupções periódicas.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Habilita o Timer 6 (`TIM6_CR1`).
+ * - Habilita a interrupção do timer (`TIM6_IER`).
+ * - Configura o prescaler (`TIM6_PSCR`) e o valor de recarga (`TIM6_ARR`)
+ * para que a interrupção ocorra a cada 50 microssegundos. Este é o intervalo
+ * necessário para a decodificação precisa do protocolo RF HT6P20B.
+ * - Limpa a flag de status (`TIM6_SR`).
+ * - Habilita as interrupções globais com a instrução de assembly `RIM`.
+ */
+void onInt_TM6(void)
+{
+    TIM6_CR1  = 0b00000001; // Liga Timer 6
+    TIM6_IER  = 0b00000001; // Habilita interrupção
+    TIM6_CNTR = 0b00000001; // Inicializa contador
+    TIM6_ARR  = 0b00000001; // Valor inicial do ARR
+    TIM6_SR   = 0b00000001; // Limpa flag de status
+    TIM6_PSCR = 0b00000010; // Prescaler
+    TIM6_ARR  = 198;        // Valor para gerar 50us (com 16MHz)
+    TIM6_IER  |= 0x00;
+    TIM6_CR1  |= 0x00;
+    #asm
+    RIM             // Habilita interrupções globais
+    #endasm
+}
+
+// ==============================================================================
+// FUNÇÃO: TIM6_UPD_IRQHandler
+// ==============================================================================
+/*
+ * Rotina de Tratamento de Interrupção do Timer 6.
+ *
+ * Parâmetros: Nenhum.
+ * Retorno: Nenhum.
+ *
+ * Lógica:
+ * - Esta função é executada automaticamente pelo hardware do STM8 a cada
+ * 50 microssegundos, conforme configurado em `onInt_TM6()`.
+ * - Ela verifica a flag global `RF_IN_ON`.
+ * - Se a flag estiver ativada, a função `Read_RF_6P20()` é chamada para
+ * processar o sinal RF vindo da antena.
+ * - Finalmente, a flag de interrupção do timer é limpa (`TIM6_SR = 0`)
+ * para que a próxima interrupção possa ocorrer.
+ */
+@far @interrupt void TIM6_UPD_IRQHandler (void)
+{
+    if(RF_IN_ON)
+    {
+        Read_RF_6P20(); // Decodifica sinal RF recebido pela antena
+    }
+    TIM6_SR = 0;
+}
