@@ -147,6 +147,8 @@ void PulseLatch(GPIO_TypeDef* porta, uint8_t pino); // Gera um pulso no pino de 
 void ApagarDisplay(void);          // Apaga todos os segmentos dos displays.
 void AtualizarDisplay(uint8_t valor); // Atualiza ambos os displays com um valor de 0 a 99.
 
+void InitDisplay(void);
+
 // -------------------- Função principal --------------------
 
 // ==============================================================================
@@ -179,6 +181,9 @@ main()
 		
 		enableInterrupts();	
 		
+		// Efeito visual inicial - LEDs piscam 3x
+    // Além de sinalizar que o sistema ligou, ajuda a detectar se o micro está travando no boot
+		InitDisplay();
     
 		// Se CH1 for mantido pressionado na inicialização, apaga códigos RF da EEPROM
     // Isso é útil para resetar o sistema sem precisar interface externa
@@ -191,10 +196,6 @@ main()
             codControler[i] = 0x00; // Apaga todos os códigos RF da EEPROM
         }
     }
-    
-     // Efeito visual inicial - LEDs piscam 3x
-    // Além de sinalizar que o sistema ligou, ajuda a detectar se o micro está travando no boot
-   
     
     // Loop principal do programa. O código dentro deste laço executa
 		// continuamente enquanto o microcontrolador estiver energizado.
@@ -219,7 +220,8 @@ main()
             {
                 --debounceCh1;
 
-							 BuzzerBeep(50000);
+							// BuzzerBeep(50000);
+							Delay(50000);
                 
                 if (Code_Ready == TRUE)
                 {
@@ -445,7 +447,7 @@ uint8_t searchCode(void)
     else
     {
         // Código não encontrado
-        BuzzerBeep(15000);
+       // BuzzerBeep(15000);
         return 1;
     }
 }
@@ -668,7 +670,7 @@ void TIM1_Config(void)
 				fim_contagem_estado = 1;
 				contador_ms_sequencia = 0;
 				BUZZER_ON;
-				Delay(300000);
+				Delay(400000);
 				BUZZER_OFF;
 			}
 		}
@@ -716,4 +718,32 @@ void AtualizarDisplay(uint8_t valor)
 	
 	WriteBCD(dezenas);
 	PulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+}
+// Rotina de inicialização do display (mostrar 00 piscando 3x)
+void InitDisplay(void)
+{
+    uint8_t i;
+
+    for (i = 0; i < 3; i++)
+    {
+        // Mostrar "00"
+        BCD_A_ON;
+        BCD_B_ON;
+        BCD_C_ON;
+        BCD_D_ON;
+        GPIO_WriteHigh(GPIOC, GPIO_PIN_7); // Latch
+        GPIO_WriteLow(GPIOC, GPIO_PIN_7);
+
+        Delay(1000); // espera 300ms
+
+        // Apagar display
+        BCD_A_OFF;
+        BCD_B_OFF;
+        BCD_C_OFF;
+        BCD_D_OFF;
+        GPIO_WriteHigh(GPIOC, GPIO_PIN_7); // Latch
+        GPIO_WriteLow(GPIOC, GPIO_PIN_7);
+
+        Delay(1000); // espera 300ms
+    }
 }
