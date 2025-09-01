@@ -53,8 +53,14 @@
 #define LATCH_01_PORT		GPIOC	
 #define LATCH_01_PIN		GPIO_PIN_2
 
+#define LATCH_011_PORT		GPIOC	
+#define LATCH_011_PIN		GPIO_PIN_4
+
 #define LATCH_02_PORT		GPIOC
 #define LATCH_02_PIN		GPIO_PIN_1
+
+#define LATCH_021_PORT		GPIOC
+#define LATCH_021_PIN		GPIO_PIN_3
 
 // Pinos de Dados BCD (conectados às entradas A, B, C, D do decodificador BCD para 7 segmentos)
 // Estes 4 pinos transmitem o valor binário codificado em decimal para o display.
@@ -132,6 +138,7 @@ void SetCLK(void);
 void BOT_14S(void);
 void BOT_24S(void);
 void BOT_PAUSE(void);
+void ApagarDisplay(void);
 
 void onInt_TM6(void);
 void TIM1_Config(void);
@@ -146,8 +153,7 @@ void WriteBCD(uint8_t valor);      // Converte e envia um dígito para os pinos B
 void PulseLatch(GPIO_TypeDef* porta, uint8_t pino); // Gera um pulso no pino de latch do display.
 void ApagarDisplay(void);          // Apaga todos os segmentos dos displays.
 void AtualizarDisplay(uint8_t valor); // Atualiza ambos os displays com um valor de 0 a 99.
-
-void InitDisplay(void);
+void PiscaDisplay(void);
 
 // -------------------- Função principal --------------------
 
@@ -181,9 +187,7 @@ main()
 		
 		enableInterrupts();	
 		
-		// Efeito visual inicial - LEDs piscam 3x
-    // Além de sinalizar que o sistema ligou, ajuda a detectar se o micro está travando no boot
-		InitDisplay();
+	  PiscaDisplay();
     
 		// Se CH1 for mantido pressionado na inicialização, apaga códigos RF da EEPROM
     // Isso é útil para resetar o sistema sem precisar interface externa
@@ -197,66 +201,70 @@ main()
         }
     }
     
+     // Efeito visual inicial - LEDs piscam 3x
+    // Além de sinalizar que o sistema ligou, ajuda a detectar se o micro está travando no boot
+   
+    
     // Loop principal do programa. O código dentro deste laço executa
 		// continuamente enquanto o microcontrolador estiver energizado.
     while (1)
     {
-				// Decrementa o timer de cooldown, permitindo que novos comandos RF
-				// sejam processados após o término do período de espera.
-        if (rf_cooldown > 0)
-        {
-            rf_cooldown--;
-        }
-				
-        RF_IN_ON = TRUE; // Habilita leitura RF na leitura da interrupção
-        HT_RC_Code_Ready_Overwrite = FALSE; // Reseta flag do protocolo RF
-				
-        // Controle via botão CH1 - Cadastro de controle RF
-				// Lógica de controle para o botão CH1 (Cadastro de Controle RF)
-				// Se o botão for pressionado por um tempo suficiente (debounce).
-        if (readCh1 == 0)
-        {
-            if (++debounceCh1 >= 250)
-            {
-                --debounceCh1;
+			// Decrementa o timer de cooldown, permitindo que novos comandos RF
+			// sejam processados após o término do período de espera.
+			if (rf_cooldown > 0)
+			{
+					rf_cooldown--;
+			}
+			
+			RF_IN_ON = TRUE; // Habilita leitura RF na leitura da interrupção
+			HT_RC_Code_Ready_Overwrite = FALSE; // Reseta flag do protocolo RF
+			
+			// Controle via botão CH1 - Cadastro de controle RF
+			// Lógica de controle para o botão CH1 (Cadastro de Controle RF)
+			// Se o botão for pressionado por um tempo suficiente (debounce).
+			if (readCh1 == 0)
+			{
+					if (++debounceCh1 >= 250)
+					{
+							--debounceCh1;
 
-							// BuzzerBeep(50000);
-							Delay(50000);
-                
-                if (Code_Ready == TRUE)
-                {
-                    save_code_to_eeprom(); // Salva o código recebido.
-                    Code_Ready = FALSE;
-										
-                  //  BuzzerBeep(100000);
-                    Delay(200000);
-                }
-                else
-                {
-                    Delay(100000);
-                }
-            }
-        }
-        else
-        {
-            debounceCh1 = 0;	// Reseta o contador se o botão for solto.
-        }
+						 //BuzzerBeep(50000);
+						 Delay(200000);
+							
+							if (Code_Ready == TRUE)
+							{
+									save_code_to_eeprom(); // Salva o código recebido.
+									Code_Ready = FALSE;
+									
+									BuzzerBeep(100000);
+								//  Delay(200000);
+							}
+							else
+							{
+									Delay(100000);
+							}
+					}
+			}
+			else
+			{
+					debounceCh1 = 0;	// Reseta o contador se o botão for solto.
+			}
 
-        // Verifica se chegou comando RF E se o cooldown já terminou
-        if (Code_Ready == TRUE && rf_cooldown == 0)
-        {
-            searchCode(); // Busca código na EEPROM e executa a ação
-            Code_Ready = FALSE;	// Reseta a flag para o próximo comando.
-            
-            // RECARREGA O COOLDOWN para ignorar os sinais repetidos do controle
-            rf_cooldown = 3000;
-        }
-        else if (Code_Ready == TRUE && rf_cooldown > 0)
-        {
-            // Se chegou um código mas ainda estamos no cooldown, apenas o descarte
-            Code_Ready = FALSE;
-        }
-    }
+			// Verifica se chegou comando RF E se o cooldown já terminou
+			if (Code_Ready == TRUE && rf_cooldown == 0)
+			{
+					searchCode(); // Busca código na EEPROM e executa a ação
+					Code_Ready = FALSE;	// Reseta a flag para o próximo comando.
+					
+					// RECARREGA O COOLDOWN para ignorar os sinais repetidos do controle
+					rf_cooldown = 3000;
+			}
+			else if (Code_Ready == TRUE && rf_cooldown > 0)
+			{
+					// Se chegou um código mas ainda estamos no cooldown, apenas o descarte
+					Code_Ready = FALSE;
+			}
+	}
 }
 
 // -------------------- Funções auxiliares --------------------
@@ -381,11 +389,11 @@ void BuzzerBeep(uint16_t duration)
  */
 void save_code_to_eeprom(void)
 {
-    int i = 0;
-    codControler[i]     = RF_CopyBuffer[0];
-    codControler[i + 1] = RF_CopyBuffer[1];
-    codControler[i + 2] = RF_CopyBuffer[2];
-    codControler[i + 3] = RF_CopyBuffer[3];
+	int i = 0;
+	codControler[i]     = RF_CopyBuffer[0];
+	codControler[i + 1] = RF_CopyBuffer[1];
+	codControler[i + 2] = RF_CopyBuffer[2];
+	codControler[i + 3] = RF_CopyBuffer[3];
 }
 
 // ==============================================================================
@@ -410,46 +418,46 @@ void save_code_to_eeprom(void)
  */
 uint8_t searchCode(void)
 {
-    int i = 0;
-    uint8_t id_salvo_mascarado;
-    uint8_t id_recebido_mascarado;
+	int i = 0;
+	uint8_t id_salvo_mascarado;
+	uint8_t id_recebido_mascarado;
 
-    // 1. Aplica a máscara para pegar SOMENTE o ID do controle, ignorando os botões.
-    id_salvo_mascarado    = codControler[i + 2] & 0xFC;
-    id_recebido_mascarado = RF_CopyBuffer[2]  & 0xFC;
-    
-    // 2. Compara o ID completo do controle
-    if (codControler[i]     == RF_CopyBuffer[0] && 
-        codControler[i + 1] == RF_CopyBuffer[1] &&
-        id_salvo_mascarado  == id_recebido_mascarado && // Compara usando a máscara
-        codControler[i + 3] == RF_CopyBuffer[3])
-    {
-        // SUCESSO! O controle é o cadastrado.
-        // 3. AGORA, verificamos qual botão foi pressionado.
-        if ((RF_CopyBuffer[2] & 0x03) == 0x01) // Tecla 1
-        {
-            BOT_14S();
-            //BuzzerBeep(100000);
-        }
-        else if ((RF_CopyBuffer[2] & 0x03) == 0x02) // Tecla 2
-        {
-            BOT_24S();
-            //BuzzerBeep(100000);
-        }
-        else if ((RF_CopyBuffer[2] & 0x03) == 0x03) // Tecla 3 (ou 4 dependendo do controle)
-        {
-            BOT_PAUSE();
-            //BuzzerBeep(30000);
-        }
-        
-        return 0; // Código encontrado e ação executada
-    }
-    else
-    {
-        // Código não encontrado
-       // BuzzerBeep(15000);
-        return 1;
-    }
+	// 1. Aplica a máscara para pegar SOMENTE o ID do controle, ignorando os botões.
+	id_salvo_mascarado    = codControler[i + 2] & 0xFC;
+	id_recebido_mascarado = RF_CopyBuffer[2] & 0xFC;
+	
+	// 2. Compara o ID completo do controle
+	if (codControler[i]     == RF_CopyBuffer[0] && 
+		codControler[i + 1] == RF_CopyBuffer[1] &&
+		id_salvo_mascarado  == id_recebido_mascarado && // Compara usando a máscara
+		codControler[i + 3] == RF_CopyBuffer[3])
+	{
+		// SUCESSO! O controle é o cadastrado.
+		// 3. AGORA, verificamos qual botão foi pressionado.
+		if ((RF_CopyBuffer[2] & 0x03) == 0x01) // Tecla 1
+		{
+			BOT_14S();
+			//BuzzerBeep(100000);
+		}
+		else if ((RF_CopyBuffer[2] & 0x03) == 0x02) // Tecla 2
+		{
+			BOT_24S();
+			//BuzzerBeep(100000);
+		}
+		else if ((RF_CopyBuffer[2] & 0x03) == 0x03) // Tecla 3 (ou 4 dependendo do controle)
+		{
+			BOT_PAUSE();
+			//BuzzerBeep(30000);
+		}
+		
+		return 0; // Código encontrado e ação executada
+	}
+	else
+	{
+		// Código não encontrado
+		//BuzzerBeep(15000);
+		return 1;
+	}
 }
 
 // ==============================================================================
@@ -670,7 +678,7 @@ void TIM1_Config(void)
 				fim_contagem_estado = 1;
 				contador_ms_sequencia = 0;
 				BUZZER_ON;
-				Delay(400000);
+				Delay(300000);
 				BUZZER_OFF;
 			}
 		}
@@ -703,10 +711,6 @@ void PulseLatch(GPIO_TypeDef* porta, uint8_t pino)
 	GPIO_WriteLow(porta, pino);
 }
 
-void ApagarDisplay(void)
-{
-
-}
 
 void AtualizarDisplay(uint8_t valor)
 {
@@ -715,35 +719,34 @@ void AtualizarDisplay(uint8_t valor)
 	
 	WriteBCD(unidades);
 	PulseLatch(LATCH_01_PORT, LATCH_01_PIN);
+	PulseLatch(LATCH_011_PORT, LATCH_011_PIN);
 	
 	WriteBCD(dezenas);
 	PulseLatch(LATCH_02_PORT, LATCH_02_PIN);
+	PulseLatch(LATCH_021_PORT, LATCH_021_PIN);
 }
-// Rotina de inicialização do display (mostrar 00 piscando 3x)
-void InitDisplay(void)
+
+void ApagarDisplay(void)
 {
-    uint8_t i;
+	BCD_A_ON;
+	BCD_B_ON;
+	BCD_C_ON;
+	BCD_D_ON;
+	PulseLatch(LATCH_01_PORT,LATCH_01_PIN);
+	PulseLatch(LATCH_011_PORT,LATCH_011_PIN);
+	PulseLatch(LATCH_02_PORT,LATCH_02_PIN);
+	PulseLatch(LATCH_021_PORT,LATCH_021_PIN);
+}
 
-    for (i = 0; i < 3; i++)
-    {
-        // Mostrar "00"
-        BCD_A_ON;
-        BCD_B_ON;
-        BCD_C_ON;
-        BCD_D_ON;
-        GPIO_WriteHigh(GPIOC, GPIO_PIN_7); // Latch
-        GPIO_WriteLow(GPIOC, GPIO_PIN_7);
-
-        Delay(1000); // espera 300ms
-
-        // Apagar display
-        BCD_A_OFF;
-        BCD_B_OFF;
-        BCD_C_OFF;
-        BCD_D_OFF;
-        GPIO_WriteHigh(GPIOC, GPIO_PIN_7); // Latch
-        GPIO_WriteLow(GPIOC, GPIO_PIN_7);
-
-        Delay(1000); // espera 300ms
-    }
+void PiscaDisplay(void)
+{
+	AtualizarDisplay(0);
+	Delay(200000);
+	ApagarDisplay();
+	Delay(200000);
+	AtualizarDisplay(0);
+	Delay(200000);
+	ApagarDisplay();
+	Delay(200000);
+	AtualizarDisplay(0);
 }

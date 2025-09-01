@@ -18,7 +18,7 @@
 #include "stm8s.h"           // Biblioteca principal da SPL. Contém definições gerais para STM8.
 #include "stm8s903k.h"       // Definições específicas do seu modelo de MCU (STM8S903K3).
 #include "stm8s_tim4.h"      // Biblioteca da SPL para o Timer 4. Usado para gerar interrupções de tempo.
-#include "stm8s_itc.h"       // Biblioteca da SPL para o Controlador de Interrupção (ITC). Usado para prioridades de interrupção.
+
 
 
 // ---------- Definição da Pinagem --------- //
@@ -161,6 +161,8 @@ main()
 	}
 }
 
+
+
 // ---------- Rotina de Interrupção (ISR) do Timer 4 -----------
 // Esta função é executada a cada 1ms
 INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23)
@@ -205,34 +207,7 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23)
 	{
 		contador_ms_sequencia++;
 		
-		switch(fim_contagem_estado)
-		{
-			case 1: // Estado 1: Apaga o display
-				if(contador_ms_sequencia == 1){ ApagarDisplay(); }
-				if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 2; }
-				break;
-			
-			case 2:	// Estado 2: Mostra "00"
-				if(contador_ms_sequencia == 1){ AtualizarDisplay(0); }	
-				if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 3; }
-				break;
-			
-			case 3:	// Estado 3: Apaga o display
-				if(contador_ms_sequencia == 1){ ApagarDisplay(); }
-				if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 4; }
-				break;
-			
-			case 4:	// Estado 4: Mostra "00"
-				if(contador_ms_sequencia == 1){ AtualizarDisplay(0); }	
-				if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 5; }
-				break;
-			
-			case 5:	// Estado 5: Apaga o display
-				if(contador_ms_sequencia == 1){ ApagarDisplay(); }
-				if(contador_ms_sequencia >= 200){ contador_ms_sequencia = 0; fim_contagem_estado = 6; }
-				break;
-			
-			case 6:	// Estado 6: Mostra "00", liga o Buzzer e finaliza tudo.
+	
 				if(contador_ms_sequencia == 1){
 					AtualizarDisplay(0);
 					GPIO_WriteHigh(BUZZER_PORT, BUZZER_PIN);
@@ -245,9 +220,7 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23)
 					fim_contagem_estado = 0;
 					flag_run = 0;
 					flag_start = 0;
-				}
-				break;
-		}
+		
 	}
 }
 
@@ -286,6 +259,7 @@ void InitCLOCK(void)
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER1, DISABLE);
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER4, ENABLE);
 }
+
 
 void TIM4_Config(void)
 {

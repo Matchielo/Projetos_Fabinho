@@ -1,0 +1,12 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=placar_display.stp
+Dependencies=
+[Options]
+ActiveProject=placar_display
+ActiveConfig=Debug
+AddSortedElements=0
