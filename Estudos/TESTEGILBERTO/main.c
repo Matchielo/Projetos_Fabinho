@@ -199,8 +199,9 @@ main()
                 --debounceCh1;
                 
                 LED1_OFF;
-								LED2_OFF;
-								LED3_OFF;
+				LED2_OFF;
+				LED3_OFF;
+				
                 BuzzerBeep(50000);
                 
                 if (Code_Ready == TRUE)
